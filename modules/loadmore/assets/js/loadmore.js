@@ -1,418 +1,167 @@
 (() => {
-    'use strict';
+  'use strict';
 
-    const ROOT_SELECTOR = '[data-yt-loadmore]';
-    const initialized = new WeakSet();
-    const NEXT_WORDS = [
-        'next', 'next page', 'suivant', 'suivante', 'page suivante',
-        'successiva', 'successivo', 'pagina successiva', 'avanti',
-        'volgende', 'weiter', 'nächste', 'naechste', 'próxima', 'proxima',
-        'seguinte', 'siguiente'
-    ];
+  const ROOT='[data-yt-loadmore]';
+  const done=new WeakSet();
+  const nextWords=['next','next page','suivant','suivante','page suivante','successiva','successivo','pagina successiva','avanti','volgende','weiter','nächste','naechste','próxima','proxima','seguinte','siguiente'];
+  const q=(r,s)=>{try{return r&&s?r.querySelector(s):null}catch{return null}};
+  const qa=(r,s)=>{try{return r&&s?[...r.querySelectorAll(s)]:[]}catch{return[]}};
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+  const abs=(href,base=location.href)=>{try{return href&&href!=='#'?new URL(href,base).href:null}catch{return null}};
 
-    const safeQuery = (root, selector) => {
-        if (!root || !selector) return null;
-        try { return root.querySelector(selector); } catch (_) { return null; }
-    };
+  function builder(){
+    try{const u=new URL(location.href);return u.searchParams.get('p')==='customizer'||(u.pathname.includes('/administrator/')&&u.searchParams.get('option')==='com_ajax')}catch{return false}
+  }
 
-    const safeQueryAll = (root, selector) => {
-        if (!root || !selector) return [];
-        try { return Array.from(root.querySelectorAll(selector)); } catch (_) { return []; }
-    };
+  function autoTarget(root){
+    let n=root.previousElementSibling;
+    while(n){if(n.matches?.('.uk-grid,[uk-grid],[data-uk-grid]'))return n;const g=q(n,'.uk-grid,[uk-grid],[data-uk-grid]');if(g)return g;n=n.previousElementSibling}
+    return null;
+  }
 
-    const normalizeText = (value) => String(value || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase();
+  function target(root,doc=document){
+    if((root.dataset.targetMode||'selector')==='selector')return q(doc,root.dataset.targetSelector||'');
+    return doc===document?autoTarget(root):null;
+  }
 
-    function isBuilderPreview() {
-        try {
-            const url = new URL(window.location.href);
-            return url.searchParams.get('p') === 'customizer'
-                || (url.pathname.includes('/administrator/') && url.searchParams.get('option') === 'com_ajax');
-        } catch (_) {
-            return false;
-        }
+  function items(t,root){return qa(t,root.dataset.itemSelector||':scope > *').filter(x=>!x.matches(ROOT))}
+
+  function scopes(doc,root){
+    const custom=qa(doc,root.dataset.paginationSelector||'');
+    return custom.length?custom:qa(doc,'.pagination,.uk-pagination,nav.pagination,ul.pagination,ul.uk-pagination,nav[aria-label*="pagination" i]');
+  }
+
+  function isNext(a){
+    if(!a)return false;
+    if((a.getAttribute('rel')||'').split(/\s+/).includes('next'))return true;
+    const label=norm([a.textContent,a.getAttribute('aria-label'),a.getAttribute('title')].filter(Boolean).join(' '));
+    return nextWords.some(w=>label.includes(norm(w)));
+  }
+
+  function currentStart(base){try{return parseInt(new URL(base,location.href).searchParams.get('start')||'0',10)||0}catch{return 0}}
+
+  function derive(base,pageSize){
+    if(builder()||!pageSize)return null;
+    try{const u=new URL(base,location.href);if(u.pathname.includes('/administrator/'))return null;u.searchParams.set('start',String(currentStart(base)+pageSize));return u.href}catch{return null}
+  }
+
+  function normalizeOffset(candidate,base,pageSize){
+    if(!candidate||!pageSize)return candidate;
+    try{
+      const u=new URL(candidate,base), cur=currentStart(base), expected=cur+pageSize;
+      if(!u.searchParams.has('start'))return u.href;
+      const n=parseInt(u.searchParams.get('start')||'',10);
+      if(Number.isFinite(n)&&n>cur&&n<expected)u.searchParams.set('start',String(expected));
+      return u.href;
+    }catch{return candidate}
+  }
+
+  function nextUrl(doc,root,base,pageSize){
+    const ss=scopes(doc,root), links=[];
+    ss.forEach(s=>links.push(...qa(s,'a[href]')));
+    let a=null;
+    const sel=root.dataset.nextSelector||'';
+    for(const s of ss){a=q(s,sel);if(a)break}
+    if(!a)a=links.find(isNext)||null;
+    if(!a){
+      const cur=currentStart(base), c=[];
+      links.forEach(l=>{const h=abs(l.getAttribute('href'),base);if(!h)return;try{const u=new URL(h);if(!u.searchParams.has('start'))return;const n=parseInt(u.searchParams.get('start')||'',10);if(Number.isFinite(n)&&n>cur)c.push([n,h])}catch{}});
+      c.sort((x,y)=>x[0]-y[0]); if(c.length)return normalizeOffset(c[0][1],base,pageSize);
+    }
+    if(a)return normalizeOffset(abs(a.getAttribute('href'),base),base,pageSize);
+    const rel=q(doc,'a[rel="next"][href]');
+    return rel?normalizeOffset(abs(rel.getAttribute('href'),base),base,pageSize):null;
+  }
+
+  function primaryLink(item,base){
+    for(const s of ['h1 a[href]','h2 a[href]','h3 a[href]','h4 a[href]','h5 a[href]','h6 a[href]','.uk-card-title a[href]','.el-title a[href]','a.uk-link-reset[href]']){const a=q(item,s);if(a)return a}
+    const links=qa(item,'a[href]'); if(!links.length)return null;
+    let current='';try{current=new URL(base,location.href).pathname}catch{}
+    return links.map(a=>{const h=abs(a.getAttribute('href'),base);if(!h)return[a,-1];try{const u=new URL(h),depth=u.pathname.split('/').filter(Boolean).length,text=norm(a.textContent).length;return[a,depth*20+Math.min(text,80)-(u.pathname===current?100:0)]}catch{return[a,-1]}}).sort((x,y)=>y[1]-x[1])[0][0];
+  }
+
+  function keys(item,base){
+    const out=[];
+    for(const n of ['data-id','data-article-id','data-item-id','data-product-id']){const v=item.getAttribute?.(n);if(v)out.push('id:'+norm(v))}
+    const a=primaryLink(item,base);
+    if(a){
+      try{
+        const u=new URL(abs(a.getAttribute('href'),base));
+        let p=decodeURIComponent(u.pathname).replace(/\/index\.php(?=\/|$)/i,'').replace(/\/{2,}/g,'/').replace(/\/$/,'').toLowerCase();
+        const parts=p.split('/').filter(Boolean), last=(parts.at(-1)||'').replace(/^\d+[-_:]/,'');
+        if(p)out.push('path:'+p); if(last.length>2)out.push('slug:'+last);
+      }catch{}
+    }
+    const title=norm(q(item,'h1,h2,h3,h4,h5,h6,.uk-card-title,.el-title')?.textContent||'');
+    const img=q(item,'img[src],img[data-src]');
+    let im=''; if(img){try{im=decodeURIComponent(new URL(img.getAttribute('src')||img.getAttribute('data-src'),base).pathname.split('/').filter(Boolean).pop()||'').toLowerCase()}catch{}}
+    if(title&&im)out.push('title-image:'+title+'|'+im);
+    if(!out.length){const t=norm(item.textContent).slice(0,500);if(t)out.push('text:'+t)}
+    return out;
+  }
+
+  function seenIndex(list,base){const s=new Set();list.forEach(i=>keys(i,base).forEach(k=>s.add(k)));return s}
+  function duplicate(item,base,seen){const k=keys(item,base);if(k.some(x=>seen.has(x)))return true;k.forEach(x=>seen.add(x));return false}
+
+  function hidePagination(root){if(root.dataset.hidePagination==='1')scopes(document,root).forEach(x=>{if(!x.closest(ROOT))x.hidden=true})}
+  function busy(root,on){root.classList.toggle('is-loading',on);root.setAttribute('aria-busy',on?'true':'false');const b=q(root,'[data-yt-loadmore-button]'),l=q(root,'[data-yt-loadmore-loading]');if(b)b.disabled=on;if(l)l.hidden=!on}
+  function label(root,text){const x=q(root,'[data-yt-loadmore-label]');if(x&&text)x.textContent=text}
+  function message(root,text,error=false){const m=q(root,'[data-yt-loadmore-message]');if(!m)return;m.textContent=text||'';m.classList.toggle('is-error',error);m.hidden=!text}
+  function finish(root,observer,show=true){observer?.disconnect();root.classList.add('is-finished');for(const s of ['[data-yt-loadmore-button]','[data-yt-loadmore-sentinel]','[data-yt-loadmore-loading]']){const x=q(root,s);if(x)x.hidden=true}message(root,show&&root.dataset.showEndMessage==='1'?(root.dataset.endText||'Hai visualizzato tutti gli elementi'):'')}
+  function animate(list,mode){if(!mode||mode==='none')return;list.forEach((x,i)=>{x.classList.add(`yt-loadmore-new--${mode}`);x.style.animationDelay=`${Math.min(i*35,245)}ms`;x.addEventListener('animationend',()=>{x.classList.remove(`yt-loadmore-new--${mode}`);x.style.animationDelay=''},{once:true})})}
+  function updateUi(t){try{if(window.UIkit&&typeof window.UIkit.update==='function')window.UIkit.update(t,'update')}catch{}}
+
+  function observer(root,load){
+    if((root.dataset.mode||'button')!=='infinite')return null;
+    const s=q(root,'[data-yt-loadmore-sentinel]'); if(!s||!('IntersectionObserver'in window))return null;
+    const d=Math.max(0,parseInt(root.dataset.threshold||'500',10)||500),o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting))load()},{rootMargin:`0px 0px ${d}px 0px`});o.observe(s);return o;
+  }
+
+  function initAjax(root,t,initial,pageSize){
+    if(!initial&&builder()){root.classList.add('is-builder-preview');return}
+    let next=initial;if(!next){finish(root,null,false);return}
+    hidePagination(root);
+    const batch=Math.max(1,parseInt(root.dataset.batchSize||'4',10)||4),queue=[],visited=new Set(),seen=seenIndex(items(t,root),location.href);
+    let loading=false,obs=null;
+    const original=q(root,'[data-yt-loadmore-label]')?.textContent||root.dataset.buttonText||'Carica altri';
+
+    async function fetchPage(){
+      if(!next)return;
+      const requested=next;if(visited.has(requested)){next=null;return}visited.add(requested);
+      const r=await fetch(requested,{credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html,application/xhtml+xml'}});if(!r.ok)throw new Error(`HTTP ${r.status}`);
+      const doc=new DOMParser().parseFromString(await r.text(),'text/html'),rt=target(root,doc);if(!rt)throw new Error('Remote target not found');
+      const remote=items(rt,root);let added=0;
+      remote.forEach(i=>{if(duplicate(i,requested,seen))return;queue.push(document.importNode(i,true));added++});
+      const explicit=nextUrl(doc,root,requested,pageSize);
+      if(explicit&&!visited.has(explicit))next=explicit;
+      else if(remote.length>=pageSize&&added>0)next=derive(requested,pageSize);
+      else next=null;
+      if(root.dataset.updateUrl==='1'){try{history.replaceState({ytLoadMore:true},'',requested)}catch{}}
     }
 
-    function toAbsoluteUrl(href, baseUrl = window.location.href) {
-        if (!href || href === '#') return null;
-        try { return new URL(href, baseUrl).href; } catch (_) { return null; }
+    async function fill(){let guard=0;while(queue.length<batch&&next&&guard++<10){const before=queue.length;await fetchPage();if(queue.length===before&&!next)break}}
+
+    async function load(){
+      if(loading||root.classList.contains('is-finished'))return;loading=true;message(root,'');busy(root,true);label(root,root.dataset.loadingText||'Caricamento…');
+      try{
+        await fill();const add=queue.splice(0,batch);if(!add.length){finish(root,obs,true);return}
+        const f=document.createDocumentFragment();add.forEach(i=>f.appendChild(i));t.appendChild(f);animate(add,root.dataset.animation||'fade');updateUi(t);
+        document.dispatchEvent(new CustomEvent('yootheme:loadmore:loaded',{detail:{root,target:t,items:add,url:next,strategy:'ajax'}}));
+        if(!queue.length&&!next)finish(root,obs,true);
+      }catch(e){console.error('[Load More for YOOtheme Pro]',e);message(root,root.dataset.errorText||'Impossibile caricare altri elementi. Riprova.',true)}finally{loading=false;busy(root,false);label(root,original)}
     }
 
-    function findAutoTarget(controlRoot) {
-        let node = controlRoot.previousElementSibling;
-        while (node) {
-            if (node.matches?.('.uk-grid, [uk-grid], [data-uk-grid]')) return node;
-            const grid = safeQuery(node, '.uk-grid, [uk-grid], [data-uk-grid]');
-            if (grid) return grid;
-            node = node.previousElementSibling;
-        }
-        return null;
-    }
+    const b=q(root,'[data-yt-loadmore-button]');if(b)b.addEventListener('click',load);obs=observer(root,load);
+  }
 
-    function findTarget(controlRoot, doc = document) {
-        const mode = controlRoot.dataset.targetMode || 'selector';
-        if (mode === 'selector') return safeQuery(doc, controlRoot.dataset.targetSelector || '');
-        return doc === document ? findAutoTarget(controlRoot) : null;
-    }
+  function init(root){
+    if(done.has(root))return;done.add(root);
+    const t=target(root);if(!t){message(root,'Contenitore non trovato. Controlla il selettore CSS.',true);return}
+    const pageSize=Math.max(1,items(t,root).length||1),explicit=nextUrl(document,root,location.href,pageSize),next=explicit||derive(location.href,pageSize);
+    initAjax(root,t,next,pageSize);
+  }
 
-    function getItems(target, root) {
-        const selector = root.dataset.itemSelector || ':scope > *';
-        return safeQueryAll(target, selector).filter((item) => !item.matches(ROOT_SELECTOR));
-    }
-
-    function paginationScopes(doc, root) {
-        const custom = root.dataset.paginationSelector || '';
-        const customScopes = safeQueryAll(doc, custom);
-        if (customScopes.length) return customScopes;
-        return safeQueryAll(doc, '.pagination, .uk-pagination, nav[aria-label], nav.pagination, ul.pagination, ul.uk-pagination');
-    }
-
-    function linkLooksLikeNext(link) {
-        if (!link) return false;
-        if ((link.getAttribute('rel') || '').split(/\s+/).includes('next')) return true;
-        const label = normalizeText([
-            link.textContent,
-            link.getAttribute('aria-label'),
-            link.getAttribute('title')
-        ].filter(Boolean).join(' '));
-        return NEXT_WORDS.some((word) => label.includes(normalizeText(word)));
-    }
-
-    function findNextByStartParam(links, baseUrl) {
-        let currentStart = 0;
-        try {
-            currentStart = Number.parseInt(new URL(baseUrl, window.location.href).searchParams.get('start') || '0', 10) || 0;
-        } catch (_) {}
-
-        const candidates = [];
-        links.forEach((link) => {
-            const absolute = toAbsoluteUrl(link.getAttribute('href'), baseUrl);
-            if (!absolute) return;
-            try {
-                const url = new URL(absolute);
-                if (!url.searchParams.has('start')) return;
-                const start = Number.parseInt(url.searchParams.get('start') || '', 10);
-                if (Number.isFinite(start) && start > currentStart) candidates.push({ start, url: absolute });
-            } catch (_) {}
-        });
-
-        candidates.sort((a, b) => a.start - b.start);
-        return candidates[0]?.url || null;
-    }
-
-    function findNextUrl(doc, root, baseUrl = window.location.href) {
-        const scopes = paginationScopes(doc, root);
-        const selector = root.dataset.nextSelector || '';
-
-        for (const scope of scopes) {
-            const explicit = safeQuery(scope, selector);
-            if (explicit) {
-                const url = toAbsoluteUrl(explicit.getAttribute('href'), baseUrl);
-                if (url) return url;
-            }
-        }
-
-        const links = [];
-        scopes.forEach((scope) => links.push(...safeQueryAll(scope, 'a[href]')));
-
-        const semantic = links.find(linkLooksLikeNext);
-        if (semantic) {
-            const url = toAbsoluteUrl(semantic.getAttribute('href'), baseUrl);
-            if (url) return url;
-        }
-
-        const byStart = findNextByStartParam(links, baseUrl);
-        if (byStart) return byStart;
-
-        const relNext = safeQuery(doc, 'a[rel="next"][href]');
-        return relNext ? toAbsoluteUrl(relNext.getAttribute('href'), baseUrl) : null;
-    }
-
-    function deriveNextPageUrl(baseUrl) {
-        if (isBuilderPreview()) return null;
-        try {
-            const url = new URL(baseUrl, window.location.href);
-            if (url.pathname.includes('/administrator/')) return null;
-            const current = Number.parseInt(url.searchParams.get('start') || '0', 10) || 0;
-            url.searchParams.set('start', String(current + 1));
-            return url.href;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    function normalizedUrlKey(href, baseUrl) {
-        const absolute = toAbsoluteUrl(href, baseUrl);
-        if (!absolute) return null;
-        try {
-            const url = new URL(absolute);
-            if (!/^https?:$/.test(url.protocol)) return null;
-            const idMatch = url.pathname.match(/\/(\d+)-[^/]+\/?$/);
-            if (idMatch) return `joomla-article:${idMatch[1]}`;
-            url.hash = '';
-            url.search = '';
-            const path = url.pathname.replace(/\/+$/, '') || '/';
-            return `url:${url.origin}${path}`;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    function itemSignature(item, baseUrl) {
-        const base = (() => {
-            try { return new URL(baseUrl, window.location.href); } catch (_) { return null; }
-        })();
-
-        const links = safeQueryAll(item, 'a[href]');
-        for (const link of links) {
-            const key = normalizedUrlKey(link.getAttribute('href'), baseUrl);
-            if (!key) continue;
-            if (base && key === `url:${base.origin}${base.pathname.replace(/\/+$/, '') || '/'}`) continue;
-            return key;
-        }
-
-        const heading = safeQuery(item, 'h1, h2, h3, h4, h5, h6, .uk-card-title, [class*="title"]');
-        const headingText = normalizeText(heading?.textContent || '');
-        if (headingText) return `title:${headingText}`;
-
-        const text = normalizeText(item.textContent).slice(0, 500);
-        const image = safeQuery(item, 'img[src], img[data-src]');
-        const imageSrc = image ? (image.getAttribute('src') || image.getAttribute('data-src') || '') : '';
-        const imageKey = normalizedUrlKey(imageSrc, baseUrl) || imageSrc.split('?')[0];
-        return `fallback:${text}|${imageKey}`;
-    }
-
-    function hidePagination(root) {
-        if (root.dataset.hidePagination !== '1') return;
-        paginationScopes(document, root).forEach((element) => {
-            if (!element.closest(ROOT_SELECTOR)) element.hidden = true;
-        });
-    }
-
-    function setBusy(root, busy) {
-        root.classList.toggle('is-loading', busy);
-        root.setAttribute('aria-busy', busy ? 'true' : 'false');
-        const button = root.querySelector('[data-yt-loadmore-button]');
-        const loading = root.querySelector('[data-yt-loadmore-loading]');
-        if (button) button.disabled = busy;
-        if (loading) loading.hidden = !busy;
-    }
-
-    function setButtonLabel(root, text) {
-        const label = root.querySelector('[data-yt-loadmore-label]');
-        if (label && text) label.textContent = text;
-    }
-
-    function showMessage(root, text, isError = false) {
-        const message = root.querySelector('[data-yt-loadmore-message]');
-        if (!message) return;
-        message.textContent = text || '';
-        message.classList.toggle('is-error', isError);
-        message.hidden = !text;
-    }
-
-    function finish(root, observer, showEnd = true) {
-        if (observer) observer.disconnect();
-        root.classList.add('is-finished');
-        const button = root.querySelector('[data-yt-loadmore-button]');
-        const sentinel = root.querySelector('[data-yt-loadmore-sentinel]');
-        const loading = root.querySelector('[data-yt-loadmore-loading]');
-        if (button) button.hidden = true;
-        if (sentinel) sentinel.hidden = true;
-        if (loading) loading.hidden = true;
-        showMessage(root, showEnd && root.dataset.showEndMessage === '1'
-            ? (root.dataset.endText || 'Hai visualizzato tutti gli elementi')
-            : '');
-    }
-
-    function animateItems(items, mode) {
-        if (!mode || mode === 'none') return;
-        items.forEach((item, index) => {
-            item.classList.add(`yt-loadmore-new--${mode}`);
-            item.style.animationDelay = `${Math.min(index * 35, 245)}ms`;
-            item.addEventListener('animationend', () => {
-                item.classList.remove(`yt-loadmore-new--${mode}`);
-                item.style.animationDelay = '';
-            }, { once: true });
-        });
-    }
-
-    function notifyUiKit(target) {
-        try {
-            if (window.UIkit && typeof window.UIkit.update === 'function') window.UIkit.update(target, 'update');
-        } catch (_) {}
-    }
-
-    function createObserver(root, loadNext) {
-        if ((root.dataset.mode || 'button') !== 'infinite') return null;
-        const sentinel = root.querySelector('[data-yt-loadmore-sentinel]');
-        if ('IntersectionObserver' in window && sentinel) {
-            const distance = Math.max(0, Number.parseInt(root.dataset.threshold || '500', 10) || 500);
-            const observer = new IntersectionObserver((entries) => {
-                if (entries.some((entry) => entry.isIntersecting)) loadNext();
-            }, { rootMargin: `0px 0px ${distance}px 0px` });
-            observer.observe(sentinel);
-            return observer;
-        }
-        return null;
-    }
-
-    function initAjax(root, target, initialNextUrl) {
-        if (!initialNextUrl && isBuilderPreview()) {
-            root.classList.add('is-builder-preview');
-            return;
-        }
-
-        let nextUrl = initialNextUrl;
-        if (!nextUrl) {
-            finish(root, null, false);
-            return;
-        }
-
-        hidePagination(root);
-
-        const batchSize = Math.max(1, Number.parseInt(root.dataset.batchSize || '4', 10) || 4);
-        const queue = [];
-        const visitedUrls = new Set();
-        const seenItems = new Set(getItems(target, root).map((item) => itemSignature(item, window.location.href)));
-        let loading = false;
-        let observer = null;
-        let duplicateOnlyPages = 0;
-        const originalButtonText = root.querySelector('[data-yt-loadmore-label]')?.textContent
-            || root.dataset.buttonText
-            || 'Carica altri';
-
-        const fetchPageIntoQueue = async () => {
-            if (!nextUrl) return;
-            const requestedUrl = nextUrl;
-            if (visitedUrls.has(requestedUrl)) {
-                nextUrl = null;
-                return;
-            }
-            visitedUrls.add(requestedUrl);
-
-            const response = await fetch(requestedUrl, {
-                credentials: 'same-origin',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html,application/xhtml+xml',
-                },
-            });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const html = await response.text();
-            const doc = new DOMParser().parseFromString(html, 'text/html');
-            const remoteTarget = findTarget(root, doc);
-            if (!remoteTarget) throw new Error('Remote target not found');
-
-            const remoteItems = getItems(remoteTarget, root);
-            let added = 0;
-            remoteItems.forEach((item) => {
-                const signature = itemSignature(item, requestedUrl);
-                if (seenItems.has(signature)) return;
-                seenItems.add(signature);
-                queue.push(document.importNode(item, true));
-                added += 1;
-            });
-
-            if (added > 0) duplicateOnlyPages = 0;
-            else duplicateOnlyPages += 1;
-
-            const explicitNext = findNextUrl(doc, root, requestedUrl);
-            if (explicitNext && !visitedUrls.has(explicitNext)) {
-                nextUrl = explicitNext;
-            } else if (remoteItems.length && duplicateOnlyPages < 2) {
-                nextUrl = deriveNextPageUrl(requestedUrl);
-            } else if (remoteItems.length && added > 0) {
-                nextUrl = deriveNextPageUrl(requestedUrl);
-            } else {
-                nextUrl = null;
-            }
-
-            if (root.dataset.updateUrl === '1') {
-                try { history.replaceState({ ytLoadMore: true }, '', requestedUrl); } catch (_) {}
-            }
-        };
-
-        const fillQueue = async () => {
-            let probes = 0;
-            while (queue.length < batchSize && nextUrl && probes < 10) {
-                probes += 1;
-                const before = queue.length;
-                await fetchPageIntoQueue();
-                if (queue.length === before && !nextUrl) break;
-            }
-        };
-
-        const loadNext = async () => {
-            if (loading || root.classList.contains('is-finished')) return;
-            loading = true;
-            showMessage(root, '');
-            setBusy(root, true);
-            setButtonLabel(root, root.dataset.loadingText || 'Caricamento…');
-
-            try {
-                await fillQueue();
-                const imported = queue.splice(0, batchSize);
-                if (!imported.length) {
-                    finish(root, observer, true);
-                    return;
-                }
-
-                const fragment = document.createDocumentFragment();
-                imported.forEach((item) => fragment.appendChild(item));
-                target.appendChild(fragment);
-                animateItems(imported, root.dataset.animation || 'fade');
-                notifyUiKit(target);
-
-                document.dispatchEvent(new CustomEvent('yootheme:loadmore:loaded', {
-                    detail: { root, target, items: imported, url: nextUrl, strategy: 'ajax' },
-                }));
-
-                if (!queue.length && !nextUrl) finish(root, observer, true);
-            } catch (error) {
-                console.error('[Load More for YOOtheme Pro]', error);
-                showMessage(root, root.dataset.errorText || 'Impossibile caricare altri elementi. Riprova.', true);
-            } finally {
-                loading = false;
-                setBusy(root, false);
-                setButtonLabel(root, originalButtonText);
-            }
-        };
-
-        const button = root.querySelector('[data-yt-loadmore-button]');
-        if (button) button.addEventListener('click', loadNext);
-        observer = createObserver(root, loadNext);
-    }
-
-    function init(root) {
-        if (initialized.has(root)) return;
-        initialized.add(root);
-
-        const target = findTarget(root);
-        if (!target) {
-            showMessage(root, 'Contenitore non trovato. Controlla il selettore CSS.', true);
-            return;
-        }
-
-        const explicitNext = findNextUrl(document, root, window.location.href);
-        const nextUrl = explicitNext || deriveNextPageUrl(window.location.href);
-        initAjax(root, target, nextUrl);
-    }
-
-    function boot(scope = document) {
-        safeQueryAll(scope, ROOT_SELECTOR).forEach(init);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => boot());
-    } else {
-        boot();
-    }
-
-    document.addEventListener('yootheme:builder:render', () => boot());
+  function boot(scope=document){qa(scope,ROOT).forEach(init)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>boot());else boot();
+  document.addEventListener('yootheme:builder:render',()=>boot());
 })();
