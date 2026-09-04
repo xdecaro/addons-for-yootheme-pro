@@ -6,6 +6,7 @@ Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, svil
 
 - **Load More by xdecaro** — caricamento progressivo con pulsante oppure Infinite Scroll, senza ricaricare la pagina.
 - **Unfold by xdecaro** — contenitore espandibile con vero sublayout del Builder e contenuti dinamici.
+- **Footer Copyright by xdecaro** — copyright dinamico per il footer con anno corrente automatico, intervallo dall'anno iniziale, nome sito Joomla, link opzionale e testo dei diritti riservati multilingua.
 
 Gli elementi sono raggruppati in YOOtheme Pro sotto **XDECARO**.
 
@@ -61,6 +62,7 @@ update.xml            feed aggiornamenti Joomla
 - [Installazione e migrazione](docs/installation.md)
 - [Load More](docs/load-more.md)
 - [Unfold](docs/unfold.md)
+- [Footer Copyright](docs/footer-copyright.md)
 - [Pubblicazione delle versioni](docs/releasing.md)
 
 ## Migrazione dalle versioni 1.1.x
