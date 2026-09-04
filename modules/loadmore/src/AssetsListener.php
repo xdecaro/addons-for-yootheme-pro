@@ -5,7 +5,7 @@ use YOOtheme\Path;
 
 final class LoadMoreYoothemeAssetsListener
 {
-    private const VERSION = '1.0.3';
+    private const VERSION = '1.0.4';
 
     public static function initHead(Metadata $metadata): void
     {
