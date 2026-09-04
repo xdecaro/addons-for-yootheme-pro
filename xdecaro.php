@@ -7,7 +7,7 @@ use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\SubscriberInterface;
 use YOOtheme\Application;
 
-final class PlgSystemLoadmoreyootheme extends CMSPlugin implements SubscriberInterface
+final class PlgSystemXdecaro extends CMSPlugin implements SubscriberInterface
 {
     /** @var CMSApplication */
     public $app;
@@ -28,7 +28,6 @@ final class PlgSystemLoadmoreyootheme extends CMSPlugin implements SubscriberInt
             require_once $autoload;
         }
 
-        $app = Application::getInstance();
-        $app->load(__DIR__ . '/modules/*/bootstrap.php');
+        Application::getInstance()->load(__DIR__ . '/modules/*/bootstrap.php');
     }
 }

@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
   <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
+    <version>1.2.0</version>
+    <addition>
+      <item>Aggiunta distribuzione ufficiale tramite GitHub Releases con ZIP installabile e checksum SHA-256.</item>
+      <item>Aggiunti workflow separati per validazione e pubblicazione delle release.</item>
+      <item>Aggiunta documentazione dedicata per installazione, Load More, Unfold e processo di release.</item>
+      <item>Aggiunti LICENSE, .gitignore e .editorconfig.</item>
+    </addition>
+    <change>
+      <item>Consolidato l'identificativo tecnico del plugin da loadmoreyootheme a xdecaro.</item>
+      <item>Riorganizzato il modulo YOOtheme da modules/loadmore a modules/addons.</item>
+      <item>Rinominati gli asset Load More in load-more.css e load-more.js.</item>
+      <item>Rimosso il versionamento hardcoded degli asset: il cache busting legge ora automaticamente la versione dal manifest.</item>
+      <item>Gli ZIP di distribuzione non vengono più conservati nel repository; vivono nelle GitHub Releases.</item>
+    </change>
+  </changelog>
+  <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
     <version>1.1.2</version>

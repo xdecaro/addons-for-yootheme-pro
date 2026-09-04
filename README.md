@@ -2,62 +2,81 @@
 
 Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, sviluppata da **xdecaro**.
 
-## Elementi disponibili
+## Elementi inclusi
 
-### Load More by xdecaro
+- **Load More by xdecaro** — caricamento progressivo con pulsante oppure Infinite Scroll, senza ricaricare la pagina.
+- **Unfold by xdecaro** — contenitore espandibile con vero sublayout del Builder e contenuti dinamici.
 
-Aggiunge **Load More** e **Infinite Scroll** senza ricaricare la pagina.
+Gli elementi sono raggruppati in YOOtheme Pro sotto **XDECARO**.
 
-Funzioni principali:
+## Requisiti
 
-- caricamento progressivo tramite Fetch/AJAX;
-- modalità pulsante oppure Infinite Scroll;
-- numero di elementi per caricamento configurabile;
-- rilevamento automatico della Grid e della paginazione Joomla/YOOtheme;
-- prevenzione dei duplicati;
-- testi automatici in base alla lingua del sito;
-- supporto a italiano, francese, inglese, tedesco, olandese, spagnolo e portoghese.
+- Joomla 4, 5 o 6
+- PHP 8.0 o superiore
+- YOOtheme Pro attivo
 
-### Unfold by xdecaro
+## Installazione su un nuovo sito
 
-Permette di inserire un vero **sublayout del Builder** e mostrarne inizialmente solo una parte, espandendo tutto il contenuto con un clic.
+1. Apri la sezione **Releases** del repository.
+2. Scarica l'asset più recente `plg_system_xdecaro_VERSIONE.zip`.
+3. In Joomla vai in **Sistema → Installa estensioni**.
+4. Carica il file ZIP.
+5. Verifica che il plugin di sistema **Essential Addons for YOOtheme Pro** sia attivo.
+6. Apri YOOtheme Pro Builder e cerca il gruppo **XDECARO**.
 
-Funzioni principali:
-
-- sublayout YOOtheme Pro tramite `builder-fragment`;
-- contenuti dinamici all’interno del sublayout;
-- altezza anteprima separata per desktop, tablet e smartphone;
-- supporto a `px`, `vh`, `vw`, `rem` ed `em`;
-- apertura e chiusura animate;
-- sfumatura inferiore senza imporre un colore di sfondo, quindi compatibile con light e dark mode;
-- pulsanti basati sugli stili UIkit/YOOtheme;
-- auto-hide quando il contenuto non supera l’altezza dell’anteprima;
-- opzione per mostrare o nascondere il pulsante Riduci;
-- ritorno automatico all’elemento dopo la chiusura;
-- supporto a `prefers-reduced-motion`;
-- gestione dei contenuti caricati o modificati dinamicamente nel Builder.
-
-## Gruppo nel Builder
-
-Gli elementi vengono mostrati nella libreria YOOtheme Pro nel gruppo:
-
-**XDECARO**
-
-con i nomi:
-
-- **Load More by xdecaro**
-- **Unfold by xdecaro**
-
-## Versione 1.1.2
-
-La versione 1.1.2 aggiorna tutti i riferimenti GitHub dopo la rinomina del repository in **addons-for-yootheme-pro**.
+Dopo la prima installazione, Joomla può rilevare gli aggiornamenti tramite `update.xml`.
 
 ## Aggiornamenti automatici
 
-Il plugin registra questo update server Joomla:
+Update server ufficiale:
 
 `https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/update.xml`
 
-Le nuove versioni possono essere rilevate da Joomla in **Sistema → Aggiornamenti → Estensioni**.
+Ogni versione stabile viene pubblicata come **GitHub Release** con:
 
-Il workflow GitHub in `.github/workflows/build-update.yml` crea automaticamente il pacchetto ZIP `plg_system_xdecaro_VERSIONE.zip` e aggiorna `update.xml` quando cambia la versione nel manifest.
+- ZIP installabile Joomla;
+- checksum SHA-256;
+- tag `vVERSIONE`;
+- note della release.
+
+## Struttura del progetto
+
+```text
+.github/workflows/   CI e pubblicazione release
+modules/addons/      modulo YOOtheme e asset condivisi
+  assets/            CSS e JavaScript
+  elements/          elementi del Builder
+  src/               listener e logica condivisa
+docs/                documentazione
+vendor/              autoloader minimo
+tools/               build e validazione
+xdecaro.php           bootstrap del plugin Joomla
+xdecaro.xml           manifest Joomla
+changelog.xml         changelog per Joomla
+update.xml            feed aggiornamenti Joomla
+```
+
+## Documentazione
+
+- [Installazione e migrazione](docs/installation.md)
+- [Load More](docs/load-more.md)
+- [Unfold](docs/unfold.md)
+- [Pubblicazione delle versioni](docs/releasing.md)
+
+## Migrazione dalle versioni 1.1.x
+
+La versione **1.2.0** consolida il progetto e cambia l'identificativo tecnico del plugin da `loadmoreyootheme` a `xdecaro`.
+
+Per il sito già configurato con la serie 1.1.x:
+
+1. fai un backup;
+2. disattiva il vecchio plugin `loadmoreyootheme`;
+3. installa `plg_system_xdecaro_1.2.0.zip`;
+4. verifica in YOOtheme Pro che **Load More by xdecaro** e **Unfold by xdecaro** siano disponibili;
+5. solo dopo la verifica, disinstalla il vecchio plugin.
+
+Gli identificativi interni degli elementi del Builder restano invariati per non perdere i layout già salvati.
+
+## Licenza
+
+GNU General Public License, versione 2 o successiva. Vedi [LICENSE](LICENSE).
