@@ -67,6 +67,7 @@ jobs:
               <client>site</client>
               <version>{version}</version>
               <infourl title="Load More for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
+              <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
               <downloads>
                 <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/{package_name}</downloadurl>
               </downloads>
