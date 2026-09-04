@@ -3,6 +3,15 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.1.2</version>
+    <change>
+      <item>Rinominato il repository GitHub in addons-for-yootheme-pro.</item>
+      <item>Aggiornati update server, changelog, download ZIP e collegamenti informativi al nuovo repository.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.1.1</version>
     <change>
       <item>Rinominata l’estensione visualizzata in Joomla in Essential Addons for YOOtheme Pro.</item>
