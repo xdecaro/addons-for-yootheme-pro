@@ -11,10 +11,10 @@
     <infourl title="Xdecaro Elements for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
     <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
     <downloads>
-      <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/plg_system_loadmoreyootheme_1.1.0.zip</downloadurl>
+      <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/plg_system_xdecaro_1.1.0.zip</downloadurl>
     </downloads>
     <tags><tag>stable</tag></tags>
-    <sha256>7a6368d170187dcde3829b0590bbf6e82f9fad3136daf221eb8b7bcaacb7f19d</sha256>
+    <sha256>326e0189985763c51ce59fe93137361cbb834155d7e4cc4610bb26bb23cb76a3</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://lucadecaro.it</maintainerurl>
     <targetplatform name="joomla" version="((4\.[0-9]+)|(5\.[0-9]+)|(6\.[0-9]+))" />
