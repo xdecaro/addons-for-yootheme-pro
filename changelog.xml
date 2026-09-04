@@ -3,6 +3,17 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.0.6</version>
+    <fix>
+      <item>Corretto il rilevamento degli elementi nelle Grid YOOtheme con wrapper interno: #blog-grid ora può contenere una sola DIV.uk-grid con gli articoli un livello più sotto.</item>
+      <item>Il numero di elementi per pagina viene ora calcolato sugli articoli reali della Grid interna e non sul wrapper esterno.</item>
+      <item>I nuovi articoli vengono inseriti direttamente nella Grid UIkit interna, evitando duplicazioni di interi blocchi e layout errati.</item>
+      <item>Rimossi dagli elementi importati i marker di layout uk-first-column e uk-grid-margin prima del ricalcolo UIkit.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.0.5</version>
     <fix>
       <item>Corretto definitivamente l’offset della paginazione YOOtheme/Joomla: una Grid con 4 elementi avanza a start=4, poi start=8 e così via.</item>
