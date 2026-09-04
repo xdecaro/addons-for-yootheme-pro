@@ -3,6 +3,15 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.1.1</version>
+    <change>
+      <item>Rinominata l’estensione visualizzata in Joomla in Essential Addons for YOOtheme Pro.</item>
+      <item>Il pacchetto di aggiornamento mantiene il formato plg_system_xdecaro_VERSIONE.zip.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.1.0</version>
     <addition>
       <item>Aggiunto Unfold by xdecaro con sublayout YOOtheme Pro basato su builder-fragment.</item>
