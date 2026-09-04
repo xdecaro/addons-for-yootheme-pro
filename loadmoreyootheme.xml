@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="system" method="upgrade">
     <name>Essential Addons for YOOtheme Pro</name>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Load More, Infinite Scroll and Unfold.</description>
     <creationDate>2026-09-05</creationDate>
     <copyright>Copyright (C) 2026 Luca De Caro</copyright>
@@ -15,7 +15,7 @@
         <folder>modules</folder>
     </files>
     <updateservers>
-        <server type="extension" priority="1" name="Essential Addons for YOOtheme Pro Updates">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/update.xml</server>
+        <server type="extension" priority="1" name="Essential Addons for YOOtheme Pro Updates">https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/update.xml</server>
     </updateservers>
-    <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
+    <changelogurl>https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/changelog.xml</changelogurl>
 </extension>
