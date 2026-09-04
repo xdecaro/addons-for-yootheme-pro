@@ -3,20 +3,12 @@
 
     const ROOT_SELECTOR = '[data-yt-loadmore]';
     const initialized = new WeakSet();
-
     const NEXT_WORDS = [
         'next', 'next page', 'suivant', 'suivante', 'page suivante',
         'successiva', 'successivo', 'pagina successiva', 'avanti',
         'volgende', 'weiter', 'nächste', 'naechste', 'próxima', 'proxima',
         'seguinte', 'siguiente'
     ];
-
-    const esc = (value) => {
-        if (window.CSS && typeof window.CSS.escape === 'function') {
-            return window.CSS.escape(value);
-        }
-        return String(value).replace(/([ #;?%&,.+*~\\':"!^$\[\]()=>|\/@])/g, '\\$1');
-    };
 
     const safeQuery = (root, selector) => {
         if (!root || !selector) return null;
@@ -34,6 +26,16 @@
         .replace(/\s+/g, ' ')
         .trim()
         .toLowerCase();
+
+    function isBuilderPreview() {
+        try {
+            const url = new URL(window.location.href);
+            return url.searchParams.get('p') === 'customizer'
+                || (url.pathname.includes('/administrator/') && url.searchParams.get('option') === 'com_ajax');
+        } catch (_) {
+            return false;
+        }
+    }
 
     function toAbsoluteUrl(href, baseUrl = window.location.href) {
         if (!href || href === '#') return null;
@@ -56,14 +58,7 @@
         if (mode === 'selector') {
             return safeQuery(doc, controlRoot.dataset.targetSelector || '');
         }
-
-        if (doc === document) return findAutoTarget(controlRoot);
-
-        if (controlRoot.id) {
-            const remoteControl = safeQuery(doc, `#${esc(controlRoot.id)}`);
-            return remoteControl ? findAutoTarget(remoteControl) : null;
-        }
-        return null;
+        return doc === document ? findAutoTarget(controlRoot) : null;
     }
 
     function getItems(target, root) {
@@ -73,22 +68,19 @@
 
     function paginationScopes(doc, root) {
         const custom = root.dataset.paginationSelector || '';
-        const scopes = safeQueryAll(doc, custom);
-        if (scopes.length) return scopes;
-
+        const customScopes = safeQueryAll(doc, custom);
+        if (customScopes.length) return customScopes;
         return safeQueryAll(doc, '.pagination, .uk-pagination, nav[aria-label], nav.pagination, ul.pagination, ul.uk-pagination');
     }
 
     function linkLooksLikeNext(link) {
         if (!link) return false;
         if ((link.getAttribute('rel') || '').split(/\s+/).includes('next')) return true;
-
         const label = normalizeText([
             link.textContent,
             link.getAttribute('aria-label'),
             link.getAttribute('title')
         ].filter(Boolean).join(' '));
-
         return NEXT_WORDS.some((word) => label.includes(normalizeText(word)));
     }
 
@@ -106,9 +98,7 @@
                 const url = new URL(absolute);
                 if (!url.searchParams.has('start')) return;
                 const start = Number.parseInt(url.searchParams.get('start') || '', 10);
-                if (Number.isFinite(start) && start > currentStart) {
-                    candidates.push({ start, url: absolute });
-                }
+                if (Number.isFinite(start) && start > currentStart) candidates.push({ start, url: absolute });
             } catch (_) {}
         });
 
@@ -117,21 +107,19 @@
     }
 
     function findNextUrl(doc, root, baseUrl = window.location.href) {
-        const selector = root.dataset.nextSelector || '';
-        const explicit = safeQuery(doc, selector);
+        const explicit = safeQuery(doc, root.dataset.nextSelector || '');
         if (explicit) {
-            const explicitUrl = toAbsoluteUrl(explicit.getAttribute('href'), baseUrl);
-            if (explicitUrl) return explicitUrl;
+            const url = toAbsoluteUrl(explicit.getAttribute('href'), baseUrl);
+            if (url) return url;
         }
 
-        const scopes = paginationScopes(doc, root);
         const links = [];
-        scopes.forEach((scope) => links.push(...safeQueryAll(scope, 'a[href]')));
+        paginationScopes(doc, root).forEach((scope) => links.push(...safeQueryAll(scope, 'a[href]')));
 
         const semantic = links.find(linkLooksLikeNext);
         if (semantic) {
-            const semanticUrl = toAbsoluteUrl(semantic.getAttribute('href'), baseUrl);
-            if (semanticUrl) return semanticUrl;
+            const url = toAbsoluteUrl(semantic.getAttribute('href'), baseUrl);
+            if (url) return url;
         }
 
         const byStart = findNextByStartParam(links, baseUrl);
@@ -141,13 +129,32 @@
         return relNext ? toAbsoluteUrl(relNext.getAttribute('href'), baseUrl) : null;
     }
 
+    function deriveNextStartUrl(baseUrl, pageSize) {
+        if (!pageSize || pageSize < 1 || isBuilderPreview()) return null;
+        try {
+            const url = new URL(baseUrl, window.location.href);
+            if (url.pathname.includes('/administrator/')) return null;
+            const currentStart = Number.parseInt(url.searchParams.get('start') || '0', 10) || 0;
+            url.searchParams.set('start', String(currentStart + pageSize));
+            return url.href;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function itemSignature(item, baseUrl) {
+        const link = safeQuery(item, 'a[href]');
+        const image = safeQuery(item, 'img[src]');
+        const href = link ? toAbsoluteUrl(link.getAttribute('href'), baseUrl) || '' : '';
+        const src = image ? toAbsoluteUrl(image.getAttribute('src'), baseUrl) || '' : '';
+        const text = normalizeText(item.textContent).slice(0, 400);
+        return `${href}|${src}|${text}`;
+    }
+
     function hidePagination(root) {
         if (root.dataset.hidePagination !== '1') return;
         paginationScopes(document, root).forEach((element) => {
-            if (!element.closest(ROOT_SELECTOR)) {
-                element.dataset.ytLoadmoreHidden = '1';
-                element.hidden = true;
-            }
+            if (!element.closest(ROOT_SELECTOR)) element.hidden = true;
         });
     }
 
@@ -182,12 +189,9 @@
         if (button) button.hidden = true;
         if (sentinel) sentinel.hidden = true;
         if (loading) loading.hidden = true;
-
-        if (showEnd && root.dataset.showEndMessage === '1') {
-            showMessage(root, root.dataset.endText || 'Hai visualizzato tutti gli elementi');
-        } else {
-            showMessage(root, '');
-        }
+        showMessage(root, showEnd && root.dataset.showEndMessage === '1'
+            ? (root.dataset.endText || 'Hai visualizzato tutti gli elementi')
+            : '');
     }
 
     function animateItems(items, mode) {
@@ -203,37 +207,31 @@
     }
 
     function notifyUiKit(target) {
-        if (!window.UIkit || !target) return;
         try {
-            if (typeof window.UIkit.update === 'function') {
-                window.UIkit.update(target, 'update');
-            }
+            if (window.UIkit && typeof window.UIkit.update === 'function') window.UIkit.update(target, 'update');
         } catch (_) {}
     }
 
     function createObserver(root, loadNext) {
         if ((root.dataset.mode || 'button') !== 'infinite') return null;
-
         const sentinel = root.querySelector('[data-yt-loadmore-sentinel]');
         if ('IntersectionObserver' in window && sentinel) {
-            const threshold = Math.max(0, Number.parseInt(root.dataset.threshold || '500', 10) || 500);
+            const distance = Math.max(0, Number.parseInt(root.dataset.threshold || '500', 10) || 500);
             const observer = new IntersectionObserver((entries) => {
                 if (entries.some((entry) => entry.isIntersecting)) loadNext();
-            }, { rootMargin: `0px 0px ${threshold}px 0px` });
+            }, { rootMargin: `0px 0px ${distance}px 0px` });
             observer.observe(sentinel);
             return observer;
         }
-
-        const fallback = document.createElement('button');
-        fallback.type = 'button';
-        fallback.className = 'uk-button uk-button-primary';
-        fallback.textContent = root.dataset.buttonText || 'Carica altri';
-        fallback.addEventListener('click', loadNext);
-        root.appendChild(fallback);
         return null;
     }
 
-    function initAjax(root, target, initialNextUrl) {
+    function initAjax(root, target, initialNextUrl, pageSize) {
+        if (!initialNextUrl && isBuilderPreview()) {
+            root.classList.add('is-builder-preview');
+            return;
+        }
+
         let nextUrl = initialNextUrl;
         if (!nextUrl) {
             finish(root, null, false);
@@ -245,13 +243,15 @@
         const batchSize = Math.max(1, Number.parseInt(root.dataset.batchSize || '4', 10) || 4);
         const queue = [];
         const visitedUrls = new Set();
+        const seenItems = new Set(getItems(target, root).map((item) => itemSignature(item, window.location.href)));
         let loading = false;
         let observer = null;
-        const originalButtonText = root.querySelector('[data-yt-loadmore-label]')?.textContent || root.dataset.buttonText || 'Carica altri';
+        const originalButtonText = root.querySelector('[data-yt-loadmore-label]')?.textContent
+            || root.dataset.buttonText
+            || 'Carica altri';
 
         const fetchPageIntoQueue = async () => {
             if (!nextUrl) return;
-
             const requestedUrl = nextUrl;
             if (visitedUrls.has(requestedUrl)) {
                 nextUrl = null;
@@ -260,14 +260,12 @@
             visitedUrls.add(requestedUrl);
 
             const response = await fetch(requestedUrl, {
-                method: 'GET',
                 credentials: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'text/html,application/xhtml+xml',
                 },
             });
-
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const html = await response.text();
@@ -276,8 +274,23 @@
             if (!remoteTarget) throw new Error('Remote target not found');
 
             const remoteItems = getItems(remoteTarget, root);
-            remoteItems.forEach((item) => queue.push(document.importNode(item, true)));
-            nextUrl = findNextUrl(doc, root, requestedUrl);
+            let added = 0;
+            remoteItems.forEach((item) => {
+                const signature = itemSignature(item, requestedUrl);
+                if (seenItems.has(signature)) return;
+                seenItems.add(signature);
+                queue.push(document.importNode(item, true));
+                added += 1;
+            });
+
+            const explicitNext = findNextUrl(doc, root, requestedUrl);
+            if (explicitNext) {
+                nextUrl = explicitNext;
+            } else if (remoteItems.length && added) {
+                nextUrl = deriveNextStartUrl(requestedUrl, pageSize);
+            } else {
+                nextUrl = null;
+            }
 
             if (root.dataset.updateUrl === '1') {
                 try { history.replaceState({ ytLoadMore: true }, '', requestedUrl); } catch (_) {}
@@ -294,7 +307,6 @@
 
         const loadNext = async () => {
             if (loading || root.classList.contains('is-finished')) return;
-
             loading = true;
             showMessage(root, '');
             setBusy(root, true);
@@ -302,7 +314,6 @@
 
             try {
                 await fillQueue();
-
                 const imported = queue.splice(0, batchSize);
                 if (!imported.length) {
                     finish(root, observer, true);
@@ -312,7 +323,6 @@
                 const fragment = document.createDocumentFragment();
                 imported.forEach((item) => fragment.appendChild(item));
                 target.appendChild(fragment);
-
                 animateItems(imported, root.dataset.animation || 'fade');
                 notifyUiKit(target);
 
@@ -320,9 +330,7 @@
                     detail: { root, target, items: imported, url: nextUrl, strategy: 'ajax' },
                 }));
 
-                if (!queue.length && !nextUrl) {
-                    finish(root, observer, true);
-                }
+                if (!queue.length && !nextUrl) finish(root, observer, true);
             } catch (error) {
                 console.error('[Load More for YOOtheme Pro]', error);
                 showMessage(root, root.dataset.errorText || 'Impossibile caricare altri elementi. Riprova.', true);
@@ -348,8 +356,10 @@
             return;
         }
 
-        const nextUrl = findNextUrl(document, root, window.location.href);
-        initAjax(root, target, nextUrl);
+        const pageSize = Math.max(1, getItems(target, root).length || 1);
+        const explicitNext = findNextUrl(document, root, window.location.href);
+        const nextUrl = explicitNext || deriveNextStartUrl(window.location.href, pageSize);
+        initAjax(root, target, nextUrl, pageSize);
     }
 
     function boot(scope = document) {
