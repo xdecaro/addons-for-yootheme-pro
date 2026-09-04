@@ -14,7 +14,7 @@
       <downloadurl type="full" format="zip">https://github.com/xdecaro/addons-for-yootheme-pro/releases/download/v1.3.0/plg_system_xdecaro_1.3.0.zip</downloadurl>
     </downloads>
     <tags><tag>stable</tag></tags>
-    <sha256>PENDING_RELEASE</sha256>
+    <sha256>9d3521cbc12d58dde57e3e3a818d028da4bf95b5ae2a58f6bfc2aa6e28548e4b</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://lucadecaro.it</maintainerurl>
     <targetplatform name="joomla" version="((4\.[0-9]+)|(5\.[0-9]+)|(6\.[0-9]+))" />
