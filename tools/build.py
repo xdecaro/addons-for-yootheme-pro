@@ -123,7 +123,7 @@ def write_update_feed(version: str, package_name: str, digest: str) -> None:
 <updates>
   <update>
     <name>Essential Addons for YOOtheme Pro</name>
-    <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Load More, Infinite Scroll and Unfold.</description>
+    <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Load More, Infinite Scroll, Unfold and Footer Copyright.</description>
     <element>xdecaro</element>
     <type>plugin</type>
     <folder>system</folder>
