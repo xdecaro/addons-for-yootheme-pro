@@ -1,6 +1,6 @@
-# Xdecaro Elements for YOOtheme Pro
+# Essential Addons for YOOtheme Pro
 
-Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla.
+Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, sviluppata da **xdecaro**.
 
 ## Elementi disponibili
 
@@ -48,9 +48,9 @@ con i nomi:
 - **Load More by xdecaro**
 - **Unfold by xdecaro**
 
-## Versione 1.1.0
+## Versione 1.1.1
 
-La versione 1.1.0 introduce **Unfold by xdecaro** e sposta gli elementi personalizzati dal gruppo `Custom` al gruppo `xdecaro`.
+La versione 1.1.1 rinomina l'estensione visualizzata in Joomla in **Essential Addons for YOOtheme Pro**.
 
 ## Aggiornamenti automatici
 
@@ -60,4 +60,4 @@ Il plugin registra questo update server Joomla:
 
 Le nuove versioni possono essere rilevate da Joomla in **Sistema → Aggiornamenti → Estensioni**.
 
-Il workflow GitHub in `.github/workflows/build-update.yml` crea automaticamente il pacchetto ZIP e aggiorna `update.xml` quando cambia la versione nel manifest.
+Il workflow GitHub in `.github/workflows/build-update.yml` crea automaticamente il pacchetto ZIP `plg_system_xdecaro_VERSIONE.zip` e aggiorna `update.xml` quando cambia la versione nel manifest.
