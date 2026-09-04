@@ -66,10 +66,10 @@ jobs:
               <folder>system</folder>
               <client>site</client>
               <version>{version}</version>
-              <infourl title="Essential Addons for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
-              <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
+              <infourl title="Essential Addons for YOOtheme Pro">https://github.com/xdecaro/addons-for-yootheme-pro</infourl>
+              <changelogurl>https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/changelog.xml</changelogurl>
               <downloads>
-                <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/{package_name}</downloadurl>
+                <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/dist/{package_name}</downloadurl>
               </downloads>
               <tags><tag>stable</tag></tags>
               <sha256>{sha256}</sha256>
