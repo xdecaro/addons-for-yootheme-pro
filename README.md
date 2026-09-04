@@ -1,33 +1,63 @@
-# Load More for YOOtheme Pro
+# Xdecaro Elements for YOOtheme Pro
 
-Elemento personalizzato per YOOtheme Pro Builder su Joomla che aggiunge **Load More** e **Infinite Scroll** senza ricaricare la pagina.
+Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla.
 
-## Versione 1.0.2
+## Elementi disponibili
 
-- rimossa l'impostazione **Elementi iniziali**: il numero iniziale resta gestito da Joomla/YOOtheme (ad esempio `Intro Articles`);
-- **Elementi per caricamento** è un campo numerico libero e indipendente dalla dimensione della pagina Joomla;
-- rilevamento più robusto di `Next`, `Suivant`, `Successiva` e della paginazione Joomla tramite `?start=N`;
-- coda interna: se Joomla restituisce 4 articoli ma il plugin è impostato a 2 per caricamento, vengono mostrati 2 + 2 senza perdere elementi;
-- se si imposta un batch maggiore della pagina Joomla, il plugin può recuperare più pagine fino a riempire il gruppo;
-- paginazione originale nascosta solo quando esiste realmente una pagina successiva;
-- update server GitHub integrato nel manifest.
+### Load More by xdecaro
 
-## Configurazione consigliata
+Aggiunge **Load More** e **Infinite Scroll** senza ricaricare la pagina.
 
-1. Imposta normalmente in Joomla il numero di `Intro Articles` (es. 4).
-2. Assegna alla Grid YOOtheme un ID, ad esempio `blog-grid`.
-3. Nel Builder aggiungi **Load More** sotto la Grid.
-4. Usa `#blog-grid` come selettore contenitore.
-5. Lascia `:scope > *` come selettore elementi.
-6. Imposta liberamente **Elementi per caricamento** (es. 4).
-7. Scegli **Load More** oppure **Infinite Scroll**.
+Funzioni principali:
+
+- caricamento progressivo tramite Fetch/AJAX;
+- modalità pulsante oppure Infinite Scroll;
+- numero di elementi per caricamento configurabile;
+- rilevamento automatico della Grid e della paginazione Joomla/YOOtheme;
+- prevenzione dei duplicati;
+- testi automatici in base alla lingua del sito;
+- supporto a italiano, francese, inglese, tedesco, olandese, spagnolo e portoghese.
+
+### Unfold by xdecaro
+
+Permette di inserire un vero **sublayout del Builder** e mostrarne inizialmente solo una parte, espandendo tutto il contenuto con un clic.
+
+Funzioni principali:
+
+- sublayout YOOtheme Pro tramite `builder-fragment`;
+- contenuti dinamici all’interno del sublayout;
+- altezza anteprima separata per desktop, tablet e smartphone;
+- supporto a `px`, `vh`, `vw`, `rem` ed `em`;
+- apertura e chiusura animate;
+- sfumatura inferiore senza imporre un colore di sfondo, quindi compatibile con light e dark mode;
+- pulsanti basati sugli stili UIkit/YOOtheme;
+- auto-hide quando il contenuto non supera l’altezza dell’anteprima;
+- opzione per mostrare o nascondere il pulsante Riduci;
+- ritorno automatico all’elemento dopo la chiusura;
+- supporto a `prefers-reduced-motion`;
+- gestione dei contenuti caricati o modificati dinamicamente nel Builder.
+
+## Gruppo nel Builder
+
+Gli elementi vengono mostrati nella libreria YOOtheme Pro nel gruppo:
+
+**XDECARO**
+
+con i nomi:
+
+- **Load More by xdecaro**
+- **Unfold by xdecaro**
+
+## Versione 1.1.0
+
+La versione 1.1.0 introduce **Unfold by xdecaro** e sposta gli elementi personalizzati dal gruppo `Custom` al gruppo `xdecaro`.
 
 ## Aggiornamenti automatici
 
-Dalla versione 1.0.2 il plugin registra questo update server:
+Il plugin registra questo update server Joomla:
 
 `https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/update.xml`
 
-Le versioni successive possono quindi essere rilevate da Joomla in **Sistema → Aggiornamenti → Estensioni**.
+Le nuove versioni possono essere rilevate da Joomla in **Sistema → Aggiornamenti → Estensioni**.
 
 Il workflow GitHub in `.github/workflows/build-update.yml` crea automaticamente il pacchetto ZIP e aggiorna `update.xml` quando cambia la versione nel manifest.

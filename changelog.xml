@@ -3,6 +3,22 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.1.0</version>
+    <addition>
+      <item>Aggiunto Unfold by xdecaro con sublayout YOOtheme Pro basato su builder-fragment.</item>
+      <item>Aggiunte altezze anteprima responsive per desktop, tablet e smartphone.</item>
+      <item>Aggiunti apertura e chiusura animate, sfumatura inferiore, auto-hide, ritorno in alto e supporto a prefers-reduced-motion.</item>
+      <item>Aggiunti testi automatici multilingua per Espandi e Riduci.</item>
+    </addition>
+    <change>
+      <item>Il gruppo degli elementi personalizzati passa da Custom a xdecaro.</item>
+      <item>Load More è ora visualizzato nel Builder come Load More by xdecaro.</item>
+      <item>Il nome visualizzato dell’estensione diventa Xdecaro Elements for YOOtheme Pro.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.0.7</version>
     <addition>
       <item>I testi predefiniti seguono automaticamente la lingua corrente del sito quando i campi Testo pulsante, Testo caricamento, Testo fine elenco e Testo errore sono lasciati vuoti.</item>
