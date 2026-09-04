@@ -8,7 +8,7 @@ include_once __DIR__ . '/src/AssetsListener.php';
 return [
     'events' => [
         'theme.head' => [
-            LoadMoreYoothemeAssetsListener::class => 'initHead',
+            XdecaroAssetsListener::class => 'initHead',
         ],
     ],
 

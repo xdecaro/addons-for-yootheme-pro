@@ -1,0 +1,37 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '**.php'
+      - '**.xml'
+      - 'modules/**'
+      - 'vendor/**'
+      - 'tools/**'
+      - '.github/workflows/validate.yml'
+      - '.github/workflows/release.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: PHP syntax
+        run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Validate source
+        run: python3 tools/build.py --check

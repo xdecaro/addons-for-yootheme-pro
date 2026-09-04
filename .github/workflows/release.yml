@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'xdecaro.php'
+      - 'xdecaro.xml'
+      - 'modules/**'
+      - 'vendor/**'
+      - 'tools/**'
+      - 'README.md'
+      - 'LICENSE'
+      - 'changelog.xml'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Read version
+        id: meta
+        shell: bash
+        run: |
+          VERSION=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          print(ET.parse('xdecaro.xml').getroot().findtext('version').strip())
+          PY
+          )
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "package=plg_system_xdecaro_${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing release
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "v${{ steps.meta.outputs.version }}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: PHP syntax
+        if: steps.existing.outputs.exists == 'false'
+        run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Build package and update feed
+        if: steps.existing.outputs.exists == 'false'
+        run: python3 tools/build.py
+
+      - name: Commit generated update feed
+        if: steps.existing.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add update.xml
+          if git diff --cached --quiet; then
+            echo "update.xml already current"
+          else
+            git commit -m "release: update feed for v${{ steps.meta.outputs.version }} [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Publish GitHub Release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.meta.outputs.version }}" \
+            "build/${{ steps.meta.outputs.package }}" \
+            "build/SHA256SUMS.txt" \
+            --repo "${{ github.repository }}" \
+            --target main \
+            --title "Essential Addons for YOOtheme Pro v${{ steps.meta.outputs.version }}" \
+            --generate-notes
