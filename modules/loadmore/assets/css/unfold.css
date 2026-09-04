@@ -1,0 +1,73 @@
+.xd-unfold {
+    --xd-unfold-duration: 450ms;
+    --xd-unfold-fade-height: 90px;
+}
+
+.xd-unfold__viewport {
+    position: relative;
+}
+
+.xd-unfold__content {
+    display: flow-root;
+    min-width: 0;
+}
+
+.xd-unfold--ready .xd-unfold__viewport {
+    overflow: hidden;
+    transition: max-height var(--xd-unfold-duration) cubic-bezier(.4, 0, .2, 1);
+    will-change: max-height;
+}
+
+.xd-unfold--ready:not(.is-expanded)[data-fade="1"] .xd-unfold__viewport {
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0,
+        #000 calc(100% - var(--xd-unfold-fade-height)),
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        #000 0,
+        #000 calc(100% - var(--xd-unfold-fade-height)),
+        transparent 100%
+    );
+}
+
+.xd-unfold.is-expanded .xd-unfold__viewport,
+.xd-unfold.is-not-overflowing .xd-unfold__viewport {
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+.xd-unfold__controls[hidden] {
+    display: none !important;
+}
+
+.xd-unfold__button {
+    position: relative;
+}
+
+.xd-unfold__chevron {
+    display: inline-block;
+    width: .48em;
+    height: .48em;
+    margin-left: .65em;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    vertical-align: .18em;
+    transform: rotate(45deg);
+    transition: transform var(--xd-unfold-duration) cubic-bezier(.4, 0, .2, 1);
+}
+
+.xd-unfold.is-expanded .xd-unfold__chevron {
+    vertical-align: -.08em;
+    transform: rotate(225deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xd-unfold--ready .xd-unfold__viewport,
+    .xd-unfold__chevron {
+        transition-duration: 0ms !important;
+        scroll-behavior: auto !important;
+    }
+}
