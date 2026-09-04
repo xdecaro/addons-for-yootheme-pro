@@ -59,14 +59,14 @@ jobs:
           update_xml = f'''<?xml version="1.0" encoding="utf-8"?>
           <updates>
             <update>
-              <name>Xdecaro Elements for YOOtheme Pro</name>
-              <description>Custom YOOtheme Pro Builder elements by xdecaro: Load More, Infinite Scroll and Unfold.</description>
+              <name>Essential Addons for YOOtheme Pro</name>
+              <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Load More, Infinite Scroll and Unfold.</description>
               <element>loadmoreyootheme</element>
               <type>plugin</type>
               <folder>system</folder>
               <client>site</client>
               <version>{version}</version>
-              <infourl title="Xdecaro Elements for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
+              <infourl title="Essential Addons for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
               <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
               <downloads>
                 <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/{package_name}</downloadurl>
