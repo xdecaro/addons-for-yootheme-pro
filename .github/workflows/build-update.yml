@@ -30,7 +30,7 @@ jobs:
           root = pathlib.Path('.')
           manifest = root / 'loadmoreyootheme.xml'
           version = ET.parse(manifest).getroot().findtext('version').strip()
-          package_name = f'plg_system_loadmoreyootheme_{version}.zip'
+          package_name = f'plg_system_xdecaro_{version}.zip'
           dist = root / 'dist'
           dist.mkdir(exist_ok=True)
           package = dist / package_name
