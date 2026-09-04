@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelogs>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
+    <version>1.0.3</version>
+    <fix>
+      <item>Il pulsante Load More resta visibile nell’anteprima del Builder YOOtheme anche quando la paginazione Joomla non è renderizzata.</item>
+      <item>Rilevamento più robusto della pagina successiva Joomla.</item>
+      <item>Fallback automatico sui parametri start=4, start=8 e successivi quando il link Next/Suivant non è disponibile.</item>
+      <item>Prevenzione dei duplicati quando una pagina remota restituisce contenuti già caricati.</item>
+    </fix>
+    <change>
+      <item>Elementi per caricamento rimane configurabile liberamente e indipendente dal numero di Intro Articles di Joomla.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
+    <version>1.0.2</version>
+    <addition>
+      <item>Aggiunto il server di aggiornamento automatico Joomla tramite GitHub.</item>
+      <item>Aggiunto il workflow GitHub per generare automaticamente pacchetto ZIP e update.xml.</item>
+    </addition>
+    <fix>
+      <item>Migliorato il riconoscimento di Next, Suivant e Successiva nella paginazione Joomla.</item>
+    </fix>
+    <remove>
+      <item>Rimosso il campo Elementi iniziali.</item>
+    </remove>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
+    <version>1.0.1</version>
+    <addition>
+      <item>Aggiunto il caricamento progressivo come fallback per le Grid senza una pagina successiva rilevabile.</item>
+    </addition>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
+    <version>1.0.0</version>
+    <addition>
+      <item>Prima versione con modalità Load More e Infinite Scroll per YOOtheme Pro Builder.</item>
+      <item>Caricamento tramite Fetch/AJAX senza ricaricare la pagina.</item>
+      <item>Supporto a selettore CSS, animazioni, loader e messaggio finale.</item>
+    </addition>
+  </changelog>
+</changelogs>
