@@ -55,9 +55,7 @@
 
     function findTarget(controlRoot, doc = document) {
         const mode = controlRoot.dataset.targetMode || 'selector';
-        if (mode === 'selector') {
-            return safeQuery(doc, controlRoot.dataset.targetSelector || '');
-        }
+        if (mode === 'selector') return safeQuery(doc, controlRoot.dataset.targetSelector || '');
         return doc === document ? findAutoTarget(controlRoot) : null;
     }
 
@@ -107,14 +105,19 @@
     }
 
     function findNextUrl(doc, root, baseUrl = window.location.href) {
-        const explicit = safeQuery(doc, root.dataset.nextSelector || '');
-        if (explicit) {
-            const url = toAbsoluteUrl(explicit.getAttribute('href'), baseUrl);
-            if (url) return url;
+        const scopes = paginationScopes(doc, root);
+        const selector = root.dataset.nextSelector || '';
+
+        for (const scope of scopes) {
+            const explicit = safeQuery(scope, selector);
+            if (explicit) {
+                const url = toAbsoluteUrl(explicit.getAttribute('href'), baseUrl);
+                if (url) return url;
+            }
         }
 
         const links = [];
-        paginationScopes(doc, root).forEach((scope) => links.push(...safeQueryAll(scope, 'a[href]')));
+        scopes.forEach((scope) => links.push(...safeQueryAll(scope, 'a[href]')));
 
         const semantic = links.find(linkLooksLikeNext);
         if (semantic) {
@@ -129,26 +132,58 @@
         return relNext ? toAbsoluteUrl(relNext.getAttribute('href'), baseUrl) : null;
     }
 
-    function deriveNextStartUrl(baseUrl, pageSize) {
-        if (!pageSize || pageSize < 1 || isBuilderPreview()) return null;
+    function deriveNextPageUrl(baseUrl) {
+        if (isBuilderPreview()) return null;
         try {
             const url = new URL(baseUrl, window.location.href);
             if (url.pathname.includes('/administrator/')) return null;
-            const currentStart = Number.parseInt(url.searchParams.get('start') || '0', 10) || 0;
-            url.searchParams.set('start', String(currentStart + pageSize));
+            const current = Number.parseInt(url.searchParams.get('start') || '0', 10) || 0;
+            url.searchParams.set('start', String(current + 1));
             return url.href;
         } catch (_) {
             return null;
         }
     }
 
+    function normalizedUrlKey(href, baseUrl) {
+        const absolute = toAbsoluteUrl(href, baseUrl);
+        if (!absolute) return null;
+        try {
+            const url = new URL(absolute);
+            if (!/^https?:$/.test(url.protocol)) return null;
+            const idMatch = url.pathname.match(/\/(\d+)-[^/]+\/?$/);
+            if (idMatch) return `joomla-article:${idMatch[1]}`;
+            url.hash = '';
+            url.search = '';
+            const path = url.pathname.replace(/\/+$/, '') || '/';
+            return `url:${url.origin}${path}`;
+        } catch (_) {
+            return null;
+        }
+    }
+
     function itemSignature(item, baseUrl) {
-        const link = safeQuery(item, 'a[href]');
-        const image = safeQuery(item, 'img[src]');
-        const href = link ? toAbsoluteUrl(link.getAttribute('href'), baseUrl) || '' : '';
-        const src = image ? toAbsoluteUrl(image.getAttribute('src'), baseUrl) || '' : '';
-        const text = normalizeText(item.textContent).slice(0, 400);
-        return `${href}|${src}|${text}`;
+        const base = (() => {
+            try { return new URL(baseUrl, window.location.href); } catch (_) { return null; }
+        })();
+
+        const links = safeQueryAll(item, 'a[href]');
+        for (const link of links) {
+            const key = normalizedUrlKey(link.getAttribute('href'), baseUrl);
+            if (!key) continue;
+            if (base && key === `url:${base.origin}${base.pathname.replace(/\/+$/, '') || '/'}`) continue;
+            return key;
+        }
+
+        const heading = safeQuery(item, 'h1, h2, h3, h4, h5, h6, .uk-card-title, [class*="title"]');
+        const headingText = normalizeText(heading?.textContent || '');
+        if (headingText) return `title:${headingText}`;
+
+        const text = normalizeText(item.textContent).slice(0, 500);
+        const image = safeQuery(item, 'img[src], img[data-src]');
+        const imageSrc = image ? (image.getAttribute('src') || image.getAttribute('data-src') || '') : '';
+        const imageKey = normalizedUrlKey(imageSrc, baseUrl) || imageSrc.split('?')[0];
+        return `fallback:${text}|${imageKey}`;
     }
 
     function hidePagination(root) {
@@ -226,7 +261,7 @@
         return null;
     }
 
-    function initAjax(root, target, initialNextUrl, pageSize) {
+    function initAjax(root, target, initialNextUrl) {
         if (!initialNextUrl && isBuilderPreview()) {
             root.classList.add('is-builder-preview');
             return;
@@ -246,6 +281,7 @@
         const seenItems = new Set(getItems(target, root).map((item) => itemSignature(item, window.location.href)));
         let loading = false;
         let observer = null;
+        let duplicateOnlyPages = 0;
         const originalButtonText = root.querySelector('[data-yt-loadmore-label]')?.textContent
             || root.dataset.buttonText
             || 'Carica altri';
@@ -283,11 +319,16 @@
                 added += 1;
             });
 
+            if (added > 0) duplicateOnlyPages = 0;
+            else duplicateOnlyPages += 1;
+
             const explicitNext = findNextUrl(doc, root, requestedUrl);
-            if (explicitNext) {
+            if (explicitNext && !visitedUrls.has(explicitNext)) {
                 nextUrl = explicitNext;
-            } else if (remoteItems.length && added) {
-                nextUrl = deriveNextStartUrl(requestedUrl, pageSize);
+            } else if (remoteItems.length && duplicateOnlyPages < 2) {
+                nextUrl = deriveNextPageUrl(requestedUrl);
+            } else if (remoteItems.length && added > 0) {
+                nextUrl = deriveNextPageUrl(requestedUrl);
             } else {
                 nextUrl = null;
             }
@@ -298,7 +339,9 @@
         };
 
         const fillQueue = async () => {
-            while (queue.length < batchSize && nextUrl) {
+            let probes = 0;
+            while (queue.length < batchSize && nextUrl && probes < 10) {
+                probes += 1;
                 const before = queue.length;
                 await fetchPageIntoQueue();
                 if (queue.length === before && !nextUrl) break;
@@ -356,10 +399,9 @@
             return;
         }
 
-        const pageSize = Math.max(1, getItems(target, root).length || 1);
         const explicitNext = findNextUrl(document, root, window.location.href);
-        const nextUrl = explicitNext || deriveNextStartUrl(window.location.href, pageSize);
-        initAjax(root, target, nextUrl, pageSize);
+        const nextUrl = explicitNext || deriveNextPageUrl(window.location.href);
+        initAjax(root, target, nextUrl);
     }
 
     function boot(scope = document) {
