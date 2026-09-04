@@ -3,12 +3,23 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.0.5</version>
+    <fix>
+      <item>Corretto definitivamente l’offset della paginazione YOOtheme/Joomla: una Grid con 4 elementi avanza a start=4, poi start=8 e così via.</item>
+      <item>I link di paginazione con offset troppo piccolo vengono normalizzati automaticamente per evitare sovrapposizioni tra una pagina e la successiva.</item>
+      <item>Nuova protezione contro i duplicati basata su ID, URL/slug dell’articolo e, come fallback, titolo e immagine.</item>
+      <item>Quando l’ultima pagina contiene meno elementi del limite Joomla, il caricamento termina senza effettuare richieste inutili.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.0.4</version>
     <fix>
       <item>Corretto il caricamento che poteva aggiungere nuovamente articoli già presenti nella Grid.</item>
-      <item>Il fallback YOOtheme ora avanza con start=1, start=2, start=3 invece di usare il numero di articoli come offset.</item>
-      <item>Deduplicazione più robusta tramite ID Joomla o URL canonico dell’articolo.</item>
-      <item>Il selettore del link successivo viene cercato prima all’interno della vera paginazione, evitando link Next estranei.</item>
+      <item>Migliorato il rilevamento della paginazione YOOtheme/Joomla.</item>
+      <item>Deduplicazione tramite ID Joomla o URL dell’articolo.</item>
+      <item>Il selettore del link successivo viene cercato prima all’interno della vera paginazione.</item>
       <item>Limite di sicurezza sulle pagine remote duplicate per evitare loop di caricamento.</item>
     </fix>
     <addition>
@@ -22,7 +33,7 @@
     <fix>
       <item>Il pulsante Load More resta visibile nell’anteprima del Builder YOOtheme anche quando la paginazione Joomla non è renderizzata.</item>
       <item>Rilevamento più robusto della pagina successiva Joomla.</item>
-      <item>Fallback automatico sui parametri start=4, start=8 e successivi quando il link Next/Suivant non è disponibile.</item>
+      <item>Fallback automatico sui parametri di paginazione Joomla quando il link Next/Suivant non è disponibile.</item>
       <item>Prevenzione dei duplicati quando una pagina remota restituisce contenuti già caricati.</item>
     </fix>
     <change>
