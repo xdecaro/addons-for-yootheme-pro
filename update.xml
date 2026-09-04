@@ -14,7 +14,7 @@
       <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/plg_system_loadmoreyootheme_1.0.3.zip</downloadurl>
     </downloads>
     <tags><tag>stable</tag></tags>
-    <sha256>bd5fa4d54853b190b48743e04dc891e6da8f369b07051866fa169511bad14dfa</sha256>
+    <sha256>95b0ac5dc16beb862ebb685ca34117a3d4486269d17db0cf61ba5409014723d0</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://lucadecaro.it</maintainerurl>
     <targetplatform name="joomla" version="((4\.[0-9]+)|(5\.[0-9]+)|(6\.[0-9]+))" />
