@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="system" method="upgrade">
     <name>Load More for YOOtheme Pro</name>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <description>Load More and Infinite Scroll for YOOtheme Pro Builder with Joomla AJAX pagination.</description>
     <creationDate>2026-09-04</creationDate>
     <copyright>Copyright (C) 2026 Luca De Caro</copyright>
@@ -17,4 +17,5 @@
     <updateservers>
         <server type="extension" priority="1" name="Load More for YOOtheme Pro Updates">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/update.xml</server>
     </updateservers>
+    <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
 </extension>
