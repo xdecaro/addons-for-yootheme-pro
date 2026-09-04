@@ -2,8 +2,8 @@
 
 return [
     'name' => 'load-more-yootheme',
-    'title' => 'Load More',
-    'group' => 'Custom',
+    'title' => 'Load More by xdecaro',
+    'group' => 'xdecaro',
     'icon' => '${url:images/icon.svg}',
     'iconSmall' => '${url:images/iconSmall.svg}',
     'element' => true,
