@@ -11,16 +11,16 @@ return [
 
     'defaults' => [
         'mode' => 'button',
-        'target_mode' => 'selector',
+        'target_mode' => 'auto',
         'target_selector' => '#blog-grid',
         'item_selector' => ':scope > *',
         'next_selector' => 'a[rel="next"], .pagination-next a, .page-item.next a, li.next a',
         'pagination_selector' => '.uk-pagination, .pagination, nav[aria-label*="pagination" i]',
         'batch_size' => 4,
-        'button_text' => 'Carica altri',
-        'loading_text' => 'Caricamento…',
-        'end_text' => 'Hai visualizzato tutti gli elementi',
-        'error_text' => 'Impossibile caricare altri elementi. Riprova.',
+        'button_text' => '',
+        'loading_text' => '',
+        'end_text' => '',
+        'error_text' => '',
         'button_style' => 'primary',
         'button_size' => '',
         'button_width' => '',
@@ -48,48 +48,47 @@ return [
             'label' => 'Rilevamento contenuto',
             'type' => 'select',
             'options' => [
+                'Automatico' => 'auto',
                 'Selettore CSS' => 'selector',
-                'Automatico (elemento precedente)' => 'auto',
             ],
         ],
         'target_selector' => [
             'label' => 'Selettore contenitore',
-            'description' => 'Consigliato: assegna un ID alla Grid, ad esempio <code>blog-grid</code>, quindi usa <code>#blog-grid</code>.',
-            'show' => 'target_mode == "selector"',
         ],
         'item_selector' => [
             'label' => 'Selettore elementi',
-            'description' => 'Selettore relativo al contenitore. Il valore predefinito usa i figli diretti della Grid.',
+        ],
+        'next_selector' => [
+            'label' => 'Selettore link pagina successiva',
+        ],
+        'pagination_selector' => [
+            'label' => 'Selettore paginazione',
         ],
         'batch_size' => [
             'label' => 'Elementi per caricamento',
-            'description' => 'Numero massimo di nuovi elementi da mostrare a ogni clic o attivazione dello scroll infinito. È indipendente dal numero di Intro Articles impostato in Joomla.',
+            'description' => 'Numero massimo di nuovi elementi da mostrare a ogni clic o attivazione dello scroll infinito.',
             'type' => 'number',
             'attrs' => [
                 'min' => 1,
                 'step' => 1,
             ],
         ],
-        'next_selector' => [
-            'label' => 'Selettore link pagina successiva',
-            'description' => 'Normalmente non serve modificarlo: il plugin rileva anche automaticamente Next, Suivant, Successiva e i parametri Joomla <code>start=</code>.',
-        ],
-        'pagination_selector' => [
-            'label' => 'Selettore paginazione',
-            'description' => 'La paginazione tradizionale viene nascosta soltanto dopo che è stata trovata una pagina successiva valida.',
-        ],
         'button_text' => [
             'label' => 'Testo pulsante',
+            'description' => 'Lascia vuoto per usare automaticamente il testo nella lingua del sito.',
             'show' => 'mode == "button"',
         ],
         'loading_text' => [
             'label' => 'Testo caricamento',
+            'description' => 'Lascia vuoto per usare automaticamente il testo nella lingua del sito.',
         ],
         'end_text' => [
             'label' => 'Testo fine elenco',
+            'description' => 'Lascia vuoto per usare automaticamente il testo nella lingua del sito.',
         ],
         'error_text' => [
             'label' => 'Testo errore',
+            'description' => 'Lascia vuoto per usare automaticamente il testo nella lingua del sito.',
         ],
         'button_style' => [
             'label' => 'Stile pulsante',
@@ -186,12 +185,7 @@ return [
                     'title' => 'Contenuto',
                     'fields' => [
                         'mode',
-                        'target_mode',
-                        'target_selector',
-                        'item_selector',
                         'batch_size',
-                        'next_selector',
-                        'pagination_selector',
                     ],
                 ],
                 [
