@@ -3,6 +3,23 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.0.7</version>
+    <addition>
+      <item>I testi predefiniti seguono automaticamente la lingua corrente del sito quando i campi Testo pulsante, Testo caricamento, Testo fine elenco e Testo errore sono lasciati vuoti.</item>
+      <item>Aggiunti testi predefiniti per italiano, francese, inglese, tedesco, olandese, spagnolo e portoghese.</item>
+    </addition>
+    <change>
+      <item>Semplificata l’interfaccia del Builder: i selettori tecnici per contenitore, elementi, pagina successiva e paginazione non sono più mostrati all’utente.</item>
+      <item>Il rilevamento automatico è ora il comportamento predefinito.</item>
+    </change>
+    <fix>
+      <item>Corretto Infinite Scroll in modalità automatica: il plugin individua correttamente la Grid anche nelle pagine HTML recuperate tramite AJAX.</item>
+      <item>Nel Builder YOOtheme Infinite Scroll non esegue più richieste AJAX durante l’anteprima, evitando il messaggio di errore rosso.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.0.6</version>
     <fix>
       <item>Corretto il rilevamento degli elementi nelle Grid YOOtheme con wrapper interno: #blog-grid ora può contenere una sola DIV.uk-grid con gli articoli un livello più sotto.</item>
