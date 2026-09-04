@@ -48,15 +48,15 @@ con i nomi:
 - **Load More by xdecaro**
 - **Unfold by xdecaro**
 
-## Versione 1.1.1
+## Versione 1.1.2
 
-La versione 1.1.1 rinomina l'estensione visualizzata in Joomla in **Essential Addons for YOOtheme Pro**.
+La versione 1.1.2 aggiorna tutti i riferimenti GitHub dopo la rinomina del repository in **addons-for-yootheme-pro**.
 
 ## Aggiornamenti automatici
 
 Il plugin registra questo update server Joomla:
 
-`https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/update.xml`
+`https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/update.xml`
 
 Le nuove versioni possono essere rilevate da Joomla in **Sistema → Aggiornamenti → Estensioni**.
 
