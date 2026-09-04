@@ -7,14 +7,14 @@
     <type>plugin</type>
     <folder>system</folder>
     <client>site</client>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <infourl title="Load More for YOOtheme Pro">https://github.com/xdecaro/loader-more-yootheme</infourl>
     <changelogurl>https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/changelog.xml</changelogurl>
     <downloads>
-      <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/plg_system_loadmoreyootheme_1.0.3.zip</downloadurl>
+      <downloadurl type="full" format="zip">https://raw.githubusercontent.com/xdecaro/loader-more-yootheme/main/dist/plg_system_loadmoreyootheme_1.0.4.zip</downloadurl>
     </downloads>
     <tags><tag>stable</tag></tags>
-    <sha256>95b0ac5dc16beb862ebb685ca34117a3d4486269d17db0cf61ba5409014723d0</sha256>
+    <sha256>c2c2a8c6ee57944ab13f4b2da975c4edbcb42610caf7e61f541bcb9c69ee79c0</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://lucadecaro.it</maintainerurl>
     <targetplatform name="joomla" version="((4\.[0-9]+)|(5\.[0-9]+)|(6\.[0-9]+))" />
