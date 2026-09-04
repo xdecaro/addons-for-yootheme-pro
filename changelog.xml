@@ -3,6 +3,21 @@
   <changelog>
     <element>loadmoreyootheme</element>
     <type>plugin</type>
+    <version>1.0.4</version>
+    <fix>
+      <item>Corretto il caricamento che poteva aggiungere nuovamente articoli già presenti nella Grid.</item>
+      <item>Il fallback YOOtheme ora avanza con start=1, start=2, start=3 invece di usare il numero di articoli come offset.</item>
+      <item>Deduplicazione più robusta tramite ID Joomla o URL canonico dell’articolo.</item>
+      <item>Il selettore del link successivo viene cercato prima all’interno della vera paginazione, evitando link Next estranei.</item>
+      <item>Limite di sicurezza sulle pagine remote duplicate per evitare loop di caricamento.</item>
+    </fix>
+    <addition>
+      <item>Aggiunto il collegamento Changelog anche al manifest del plugin.</item>
+    </addition>
+  </changelog>
+  <changelog>
+    <element>loadmoreyootheme</element>
+    <type>plugin</type>
     <version>1.0.3</version>
     <fix>
       <item>Il pulsante Load More resta visibile nell’anteprima del Builder YOOtheme anche quando la paginazione Joomla non è renderizzata.</item>
