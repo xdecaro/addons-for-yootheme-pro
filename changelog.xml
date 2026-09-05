@@ -3,6 +3,29 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.9</version>
+    <addition>
+      <item>Aggiunta in Load More la scelta visibile “Elemento collegato”.</item>
+      <item>Disponibili due modalità: Grid precedente — Automatico e Grid tramite ID CSS.</item>
+    </addition>
+    <change>
+      <item>Il collegamento manuale tramite ID CSS viene mostrato solo quando selezionato, mantenendo l’interfaccia semplice.</item>
+      <item>I selettori tecnici interni restano nascosti all’utente.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
+    <version>1.3.8</version>
+    <fix>
+      <item>Migliorato il rilevamento automatico della Grid nelle pagine YOOtheme con wrapper intermedi, inclusi template Home e Featured Articles.</item>
+      <item>Load More cerca ora la Grid precedente anche risalendo i contenitori del layout invece di dipendere dal solo fratello DOM immediato.</item>
+      <item>La Grid individuata viene memorizzata per ritrovare la stessa sorgente nelle pagine AJAX successive.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.7</version>
     <fix>
       <item>Corretto il blocco della pagina introdotto dalla 1.3.6: rimosso il MutationObserver che poteva creare un ciclo di microtask osservando e modificando gli stessi attributi.</item>
