@@ -3,6 +3,16 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.2</version>
+    <fix>
+      <item>Il controllo Load More viene renderizzato nascosto e mostrato solo dopo che il plugin ha verificato l'esistenza di una pagina successiva reale.</item>
+      <item>Eliminato il breve lampeggio del pulsante nelle categorie che contengono già tutti gli articoli disponibili.</item>
+      <item>La stessa logica viene applicata al sentinel di Infinite Scroll, mantenendo pulito il layout iniziale.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.1</version>
     <fix>
       <item>Load More non crea più automaticamente un URL start=... quando Joomla non espone una pagina successiva reale.</item>
