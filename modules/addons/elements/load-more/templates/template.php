@@ -115,12 +115,12 @@ $el = $this->el('div', [
 <?= $el($props, $attrs) ?>
 
     <?php if ($props['mode'] === 'button'): ?>
-        <button type="button" class="<?= implode(' ', array_map('htmlspecialchars', $buttonClass)) ?>" data-yt-loadmore-button>
+        <button type="button" class="<?= implode(' ', array_map('htmlspecialchars', $buttonClass)) ?>" data-yt-loadmore-button hidden>
             <span data-yt-loadmore-label><?= htmlspecialchars($buttonText, ENT_QUOTES, 'UTF-8') ?></span>
             <span class="yt-loadmore__spinner" data-yt-loadmore-spinner aria-hidden="true"></span>
         </button>
     <?php else: ?>
-        <div class="yt-loadmore__sentinel" data-yt-loadmore-sentinel aria-hidden="true"></div>
+        <div class="yt-loadmore__sentinel" data-yt-loadmore-sentinel aria-hidden="true" hidden></div>
         <div class="yt-loadmore__loading" data-yt-loadmore-loading hidden>
             <span class="yt-loadmore__spinner yt-loadmore__spinner--visible" aria-hidden="true"></span>
             <span data-yt-loadmore-loading-label><?= htmlspecialchars($loadingText, ENT_QUOTES, 'UTF-8') ?></span>
