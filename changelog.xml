@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.5</version>
+    <fix>
+      <item>Corretto il caso in cui YOOtheme mostra il primo gruppo di articoli senza renderizzare alcuna paginazione HTML: Load More esegue ora una verifica silenziosa della pagina successiva.</item>
+      <item>Se la verifica trova almeno un articolo realmente nuovo, il pulsante viene mostrato; se trova solo duplicati o nessun articolo, resta completamente nascosto.</item>
+      <item>Con zero articoli il controllo resta nascosto senza messaggi di errore.</item>
+      <item>Rimossa la seconda logica di visibilità concorrente: lo stato iniziale, la verifica e la comparsa del controllo sono ora gestiti da un solo script per eliminare race condition e lampeggi.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.4</version>
     <fix>
       <item>Load More resta completamente nascosto finché non sono confermati almeno un elemento reale e una pagina successiva.</item>
