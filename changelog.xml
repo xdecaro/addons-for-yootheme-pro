@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.10</version>
+    <fix>
+      <item>Corretto Load More quando la pagina successiva non contiene più la Grid degli articoli: altre Grid del template non vengono più scambiate per la sorgente collegata.</item>
+      <item>Prima di mostrare il controllo, il plugin verifica che la pagina successiva contenga una Grid con la stessa struttura della Grid locale e almeno un elemento realmente nuovo.</item>
+      <item>Se non esiste una Grid corrispondente, il pulsante Load More e il sentinel Infinite Scroll restano nascosti senza caricare titoli, footer o altri blocchi del template.</item>
+      <item>Il controllo strutturale funziona sia con collegamento automatico sia con Grid tramite ID CSS.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.9</version>
     <addition>
       <item>Aggiunta in Load More la scelta visibile “Elemento collegato”.</item>
