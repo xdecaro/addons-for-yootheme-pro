@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.6</version>
+    <fix>
+      <item>Stabilizzato Load More quando una pagina successiva reale è stata confermata: il pulsante non può più scomparire e riapparire durante il caricamento della pagina.</item>
+      <item>Aggiunto uno stato persistente di disponibilità che protegge il controllo da vecchie logiche di visibilità ancora presenti in cache.</item>
+      <item>Neutralizzato il precedente script load-more-visibility.js, mantenuto soltanto come shim di compatibilità.</item>
+      <item>I casi con 3 articoli totali o 0 articoli restano completamente nascosti come previsto.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.5</version>
     <fix>
       <item>Corretto il caso in cui YOOtheme mostra il primo gruppo di articoli senza renderizzare alcuna paginazione HTML: Load More esegue ora una verifica silenziosa della pagina successiva.</item>

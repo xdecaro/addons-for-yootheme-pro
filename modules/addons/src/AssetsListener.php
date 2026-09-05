@@ -20,6 +20,11 @@ final class XdecaroAssetsListener
             'defer' => true,
         ]);
 
+        $metadata->set('script:xdecaro-load-more-stability', [
+            'src' => Path::get('../assets/js/load-more-stability.js') . '?v=' . $version,
+            'defer' => true,
+        ]);
+
         $metadata->set('style:xdecaro-unfold', [
             'href' => Path::get('../assets/css/unfold.css') . '?v=' . $version,
         ]);

@@ -14,6 +14,15 @@
     display: none !important;
 }
 
+/* Once the main script confirms a real next page, keep the control visually stable. */
+.yt-loadmore.is-confirmed-next[data-mode="button"] [data-yt-loadmore-button] {
+    display: inline-flex !important;
+}
+
+.yt-loadmore.is-confirmed-next[data-mode="infinite"] [data-yt-loadmore-sentinel] {
+    display: block !important;
+}
+
 .yt-loadmore__spinner {
     display: none;
     width: 1em;
