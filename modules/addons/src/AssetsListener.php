@@ -20,11 +20,6 @@ final class XdecaroAssetsListener
             'defer' => true,
         ]);
 
-        $metadata->set('script:xdecaro-load-more-visibility', [
-            'src' => Path::get('../assets/js/load-more-visibility.js') . '?v=' . $version,
-            'defer' => true,
-        ]);
-
         $metadata->set('style:xdecaro-unfold', [
             'href' => Path::get('../assets/css/unfold.css') . '?v=' . $version,
         ]);
