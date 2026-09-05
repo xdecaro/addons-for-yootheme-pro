@@ -3,6 +3,20 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.2</version>
+    <addition>
+      <item>Aggiunti Form e Forms List nel gruppo XDECARO di YOOtheme Pro Builder per integrare il componente Forms.</item>
+      <item>Form permette di selezionare direttamente un modulo Forms oppure indicarne manualmente l'ID.</item>
+      <item>Forms List mostra automaticamente l'elenco dei moduli attivi del componente Forms.</item>
+    </addition>
+    <change>
+      <item>Nuove icone Form e Forms List ridisegnate in stile lineare, più leggere e uniformi alle icone Load More e Unfold.</item>
+      <item>Dimensioni delle nuove icone uniformate a 40 × 40 px nel selettore del Builder e 20 × 20 px nella variante compatta.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.1</version>
     <fix>
       <item>Load More non crea più automaticamente un URL start=... quando Joomla non espone una pagina successiva reale.</item>
