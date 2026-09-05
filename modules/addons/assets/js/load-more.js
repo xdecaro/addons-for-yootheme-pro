@@ -102,11 +102,6 @@
 
   function currentStart(base){try{return parseInt(new URL(base,location.href).searchParams.get('start')||'0',10)||0}catch{return 0}}
 
-  function derive(base,pageSize){
-    if(builder()||!pageSize)return null;
-    try{const u=new URL(base,location.href);if(u.pathname.includes('/administrator/'))return null;u.searchParams.set('start',String(currentStart(base)+pageSize));return u.href}catch{return null}
-  }
-
   function normalizeOffset(candidate,base,pageSize){
     if(!candidate||!pageSize)return candidate;
     try{
@@ -203,7 +198,6 @@
       remote.forEach(i=>{if(duplicate(i,requested,seen))return;queue.push(prepareImported(document.importNode(i,true)));added++});
       const explicit=nextUrl(doc,root,requested,pageSize);
       if(explicit&&!visited.has(explicit))next=explicit;
-      else if(remote.length>=pageSize&&added>0)next=derive(requested,pageSize);
       else next=null;
       if(root.dataset.updateUrl==='1'){try{history.replaceState({ytLoadMore:true},'',requested)}catch{}}
     }
@@ -230,7 +224,7 @@
       if(!builder())message(root,text(root,'error'),true);
       return;
     }
-    const list=items(t,root),pageSize=Math.max(1,list.length||1),explicit=nextUrl(document,root,location.href,pageSize),next=explicit||derive(location.href,pageSize);
+    const list=items(t,root),pageSize=Math.max(1,list.length||1),next=nextUrl(document,root,location.href,pageSize);
     initAjax(root,t,next,pageSize);
   }
 

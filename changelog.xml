@@ -3,6 +3,16 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.1</version>
+    <fix>
+      <item>Load More non crea più automaticamente un URL start=... quando Joomla non espone una pagina successiva reale.</item>
+      <item>Il pulsante viene nascosto subito quando l'elenco corrente non ha una pagina successiva, evitando errori su categorie con pochi articoli.</item>
+      <item>Dopo ogni caricamento il plugin termina appena non trova più un link di paginazione successivo, senza effettuare richieste speculative.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.0</version>
     <addition>
       <item>Aggiunto Footer Copyright by xdecaro nel gruppo XDECARO di YOOtheme Pro Builder.</item>
