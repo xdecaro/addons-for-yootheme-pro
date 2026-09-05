@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.4</version>
+    <fix>
+      <item>Load More resta completamente nascosto finché non sono confermati almeno un elemento reale e una pagina successiva.</item>
+      <item>Con zero articoli non vengono più mostrati né il pulsante né il messaggio di errore.</item>
+      <item>Aggiunta una protezione CSS contro i flash intermittenti del pulsante o dei messaggi prima dello stato pronto.</item>
+      <item>Il controllo rimane disponibile nel Builder YOOtheme per l'editing.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.3</version>
     <fix>
       <item>Il controllo Load More viene renderizzato nascosto e mostrato solo dopo che il plugin ha verificato l'esistenza di una pagina successiva reale.</item>

@@ -6,6 +6,14 @@
     display: none !important;
 }
 
+/* Keep all Load More UI completely hidden until availability is confirmed. */
+.yt-loadmore:not(.is-ready):not(.is-builder-preview) [data-yt-loadmore-button],
+.yt-loadmore:not(.is-ready):not(.is-builder-preview) [data-yt-loadmore-sentinel],
+.yt-loadmore:not(.is-ready):not(.is-builder-preview) [data-yt-loadmore-loading],
+.yt-loadmore:not(.is-ready):not(.is-builder-preview) [data-yt-loadmore-message] {
+    display: none !important;
+}
+
 .yt-loadmore__spinner {
     display: none;
     width: 1em;
