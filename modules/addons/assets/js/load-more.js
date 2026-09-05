@@ -165,7 +165,28 @@
   function busy(root,on){root.classList.toggle('is-loading',on);root.setAttribute('aria-busy',on?'true':'false');const b=q(root,'[data-yt-loadmore-button]'),l=q(root,'[data-yt-loadmore-loading]');if(b)b.disabled=on;if(l)l.hidden=!on}
   function label(root,value){const x=q(root,'[data-yt-loadmore-label]');if(x)x.textContent=value||text(root,'button')}
   function message(root,value,error=false){const m=q(root,'[data-yt-loadmore-message]');if(!m)return;m.textContent=value||'';m.classList.toggle('is-error',error);m.hidden=!value}
-  function finish(root,observer,show=true){observer?.disconnect();root.classList.add('is-finished');for(const s of ['[data-yt-loadmore-button]','[data-yt-loadmore-sentinel]','[data-yt-loadmore-loading]']){const x=q(root,s);if(x)x.hidden=true}message(root,show&&root.dataset.showEndMessage==='1'?text(root,'end'):'')}
+
+  function revealControl(root){
+    const selector=(root.dataset.mode||'button')==='infinite'?'[data-yt-loadmore-sentinel]':'[data-yt-loadmore-button]';
+    const control=q(root,selector);
+    if(control)control.hidden=false;
+  }
+
+  function setReady(root){
+    root.classList.remove('is-finished');
+    root.classList.add('is-ready');
+    message(root,'');
+    revealControl(root);
+  }
+
+  function finish(root,observer,show=true){
+    observer?.disconnect();
+    root.classList.add('is-finished');
+    if(!show)root.classList.remove('is-ready');
+    for(const s of ['[data-yt-loadmore-button]','[data-yt-loadmore-sentinel]','[data-yt-loadmore-loading]']){const x=q(root,s);if(x)x.hidden=true}
+    message(root,show&&root.dataset.showEndMessage==='1'?text(root,'end'):'');
+  }
+
   function animate(list,mode){if(!mode||mode==='none')return;list.forEach((x,i)=>{x.classList.add(`yt-loadmore-new--${mode}`);x.style.animationDelay=`${Math.min(i*35,245)}ms`;x.addEventListener('animationend',()=>{x.classList.remove(`yt-loadmore-new--${mode}`);x.style.animationDelay=''},{once:true})})}
   function updateUi(t){try{if(window.UIkit&&typeof window.UIkit.update==='function')window.UIkit.update(t,'update')}catch{}}
 
@@ -175,16 +196,51 @@
     const d=Math.max(0,parseInt(root.dataset.threshold||'500',10)||500),o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting))load()},{rootMargin:`0px 0px ${d}px 0px`});o.observe(s);return o;
   }
 
+  function probeUrl(base,pageSize){
+    try{
+      const u=new URL(base,location.href);
+      u.searchParams.set('start',String(currentStart(base)+pageSize));
+      return u.href;
+    }catch{return null}
+  }
+
+  async function probeNext(root,t,pageSize){
+    if(!t||pageSize<1)return null;
+    const candidate=probeUrl(location.href,pageSize);
+    if(!candidate)return null;
+
+    try{
+      const r=await fetch(candidate,{credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html,application/xhtml+xml'}});
+      if(!r.ok)return null;
+      const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+      const rt=target(root,doc);
+      if(!rt)return null;
+      const remote=items(rt,root);
+      if(!remote.length)return null;
+
+      const seen=seenIndex(items(t,root),location.href);
+      for(const item of remote){
+        const itemKeys=keys(item,candidate);
+        if(itemKeys.length&&!itemKeys.some(k=>seen.has(k)))return candidate;
+      }
+    }catch(e){
+      console.debug('[Load More for YOOtheme Pro] Silent next-page probe failed',e);
+    }
+    return null;
+  }
+
   function initAjax(root,t,initial,pageSize){
     applyTexts(root);
     if(builder()){
       root.classList.add('is-builder-preview');
+      setReady(root);
       return;
     }
 
     const host=itemHost(t,root);
     let next=initial;if(!next||!host){finish(root,null,false);return}
     hidePagination(root);
+    setReady(root);
     const batch=Math.max(1,parseInt(root.dataset.batchSize||'4',10)||4),queue=[],visited=new Set(),seen=seenIndex(items(t,root),location.href);
     let loading=false,obs=null;
     const original=text(root,'button');
@@ -194,8 +250,8 @@
       const requested=next;if(visited.has(requested)){next=null;return}visited.add(requested);
       const r=await fetch(requested,{credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html,application/xhtml+xml'}});if(!r.ok)throw new Error(`HTTP ${r.status}`);
       const doc=new DOMParser().parseFromString(await r.text(),'text/html'),rt=target(root,doc);if(!rt)throw new Error('Remote target not found');
-      const remote=items(rt,root);let added=0;
-      remote.forEach(i=>{if(duplicate(i,requested,seen))return;queue.push(prepareImported(document.importNode(i,true)));added++});
+      const remote=items(rt,root);
+      remote.forEach(i=>{if(duplicate(i,requested,seen))return;queue.push(prepareImported(document.importNode(i,true)))});
       const explicit=nextUrl(doc,root,requested,pageSize);
       if(explicit&&!visited.has(explicit))next=explicit;
       else next=null;
@@ -217,14 +273,28 @@
     const b=q(root,'[data-yt-loadmore-button]');if(b)b.addEventListener('click',load);obs=observer(root,load);
   }
 
-  function init(root){
+  async function init(root){
     if(done.has(root))return;done.add(root);applyTexts(root);
-    const t=target(root);
-    if(!t){
-      if(!builder())message(root,text(root,'error'),true);
+
+    if(builder()){
+      root.classList.add('is-builder-preview');
+      setReady(root);
       return;
     }
-    const list=items(t,root),pageSize=Math.max(1,list.length||1),next=nextUrl(document,root,location.href,pageSize);
+
+    const t=target(root);
+    if(!t){finish(root,null,false);return}
+
+    const list=items(t,root);
+    if(!list.length){finish(root,null,false);return}
+
+    const pageSize=list.length;
+    let next=nextUrl(document,root,location.href,pageSize);
+
+    if(!next){
+      next=await probeNext(root,t,pageSize);
+    }
+
     initAjax(root,t,next,pageSize);
   }
 
