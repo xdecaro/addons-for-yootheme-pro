@@ -4,17 +4,22 @@ Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, svil
 
 ## Elementi inclusi
 
+- **Form** — mostra un singolo modulo creato con il componente Forms, selezionabile direttamente dal Builder oppure tramite ID manuale.
+- **Forms List** — mostra automaticamente l'elenco dei moduli attivi del componente Forms.
 - **Load More by xdecaro** — caricamento progressivo con pulsante oppure Infinite Scroll, senza ricaricare la pagina.
 - **Unfold by xdecaro** — contenitore espandibile con vero sublayout del Builder e contenuti dinamici.
 - **Footer Copyright by xdecaro** — copyright dinamico per il footer con anno corrente automatico, intervallo dall'anno iniziale, nome sito Joomla, link opzionale e testo dei diritti riservati multilingua.
 
 Gli elementi sono raggruppati in YOOtheme Pro sotto **XDECARO**.
 
+Le icone degli elementi usano uno stile uniforme, leggero e lineare, con dimensioni coerenti nel selettore del Builder.
+
 ## Requisiti
 
 - Joomla 4, 5 o 6
 - PHP 8.0 o superiore
 - YOOtheme Pro attivo
+- Per **Form** e **Forms List**: componente **Forms** installato e relativo plugin di sistema attivo
 
 ## Installazione su un nuovo sito
 
