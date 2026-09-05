@@ -12,7 +12,7 @@ return [
     'defaults' => [
         'mode' => 'button',
         'target_mode' => 'auto',
-        'target_selector' => '#blog-grid',
+        'target_selector' => '',
         'item_selector' => ':scope > *',
         'next_selector' => 'a[rel="next"], .pagination-next a, .page-item.next a, li.next a',
         'pagination_selector' => '.uk-pagination, .pagination, nav[aria-label*="pagination" i]',
@@ -45,15 +45,21 @@ return [
             ],
         ],
         'target_mode' => [
-            'label' => 'Rilevamento contenuto',
+            'label' => 'Elemento collegato',
+            'description' => 'Scegli come collegare Load More alla Grid che contiene gli articoli o prodotti.',
             'type' => 'select',
             'options' => [
-                'Automatico' => 'auto',
-                'Selettore CSS' => 'selector',
+                'Grid precedente — Automatico' => 'auto',
+                'Grid tramite ID CSS' => 'selector',
             ],
         ],
         'target_selector' => [
-            'label' => 'Selettore contenitore',
+            'label' => 'ID / selettore della Grid',
+            'description' => 'Assegna un ID alla Grid in Advanced → ID e inseriscilo qui con #, ad esempio #home-grid.',
+            'attrs' => [
+                'placeholder' => '#home-grid',
+            ],
+            'show' => 'target_mode == "selector"',
         ],
         'item_selector' => [
             'label' => 'Selettore elementi',
@@ -185,6 +191,8 @@ return [
                     'title' => 'Contenuto',
                     'fields' => [
                         'mode',
+                        'target_mode',
+                        'target_selector',
                         'batch_size',
                     ],
                 ],
