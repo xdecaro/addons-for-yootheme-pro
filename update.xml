@@ -7,14 +7,14 @@
     <type>plugin</type>
     <folder>system</folder>
     <client>site</client>
-    <version>1.3.3</version>
+    <version>1.3.4</version>
     <infourl title="Essential Addons for YOOtheme Pro">https://github.com/xdecaro/addons-for-yootheme-pro</infourl>
     <changelogurl>https://raw.githubusercontent.com/xdecaro/addons-for-yootheme-pro/main/changelog.xml</changelogurl>
     <downloads>
-      <downloadurl type="full" format="zip">https://github.com/xdecaro/addons-for-yootheme-pro/releases/download/v1.3.3/plg_system_xdecaro_1.3.3.zip</downloadurl>
+      <downloadurl type="full" format="zip">https://github.com/xdecaro/addons-for-yootheme-pro/releases/download/v1.3.4/plg_system_xdecaro_1.3.4.zip</downloadurl>
     </downloads>
     <tags><tag>stable</tag></tags>
-    <sha256>eaa2952f6ac36611bd89c0e230dba4e87fb0fd354ea7eb43b87a35df31adf3ce</sha256>
+    <sha256>da2cd1e4a5f0e3a8d641c6792eb9d7f81b6810a163ff37711f6cf47b8586955f</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://lucadecaro.it</maintainerurl>
     <targetplatform name="joomla" version="((4\.[0-9]+)|(5\.[0-9]+)|(6\.[0-9]+))" />
