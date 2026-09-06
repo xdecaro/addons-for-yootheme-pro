@@ -1,0 +1,202 @@
+.x-pagination {
+    position: relative;
+}
+
+.x-pagination [hidden] {
+    display: none !important;
+}
+
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loadmore],
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-sentinel],
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loading],
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-nav],
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-message] {
+    display: none !important;
+}
+
+.x-pagination__control {
+    align-items: center;
+    justify-content: center;
+    gap: .45em;
+    min-width: 2.5em;
+    cursor: pointer;
+}
+
+.x-pagination__control:disabled {
+    cursor: default;
+}
+
+.x-pagination__list {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    max-width: 100%;
+}
+
+.x-pagination__page {
+    min-width: 2.5em;
+    padding-left: .65em;
+    padding-right: .65em;
+}
+
+.x-pagination__page.is-active,
+.x-pagination__page[aria-current="page"] {
+    pointer-events: none;
+    font-weight: 700;
+    opacity: 1;
+}
+
+.x-pagination--default .x-pagination__page.is-active,
+.x-pagination--primary .x-pagination__page.is-active,
+.x-pagination--secondary .x-pagination__page.is-active,
+.x-pagination--danger .x-pagination__page.is-active {
+    box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.x-pagination--text .x-pagination__page.is-active,
+.x-pagination--link .x-pagination__page.is-active {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: .25em;
+}
+
+.x-pagination__ellipsis {
+    display: inline-flex;
+    min-width: 1.5em;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.x-pagination__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 1.12em;
+}
+
+.x-pagination__spinner {
+    display: none;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: x-pagination-spin .7s linear infinite;
+}
+
+.x-pagination.is-loading .x-pagination__spinner,
+.x-pagination__spinner--visible {
+    display: inline-block;
+}
+
+.x-pagination.is-loading [data-x-pagination-loadmore],
+.x-pagination.is-loading [data-x-pagination-nav] {
+    cursor: wait;
+    opacity: .75;
+}
+
+.x-pagination__sentinel {
+    width: 100%;
+    height: 1px;
+}
+
+.x-pagination__loading,
+.x-pagination__message {
+    padding: 10px 0;
+}
+
+.x-pagination__message.is-error {
+    color: var(--uk-form-danger-color, #f0506e);
+}
+
+.x-pagination--custom .x-pagination__control,
+.x-pagination__control--custom {
+    display: inline-flex;
+    padding: .65em 1em;
+    border-style: solid;
+    border-width: var(--x-pagination-border-width, 1px);
+    border-color: var(--x-pagination-border, currentColor);
+    border-radius: var(--x-pagination-radius, 0);
+    background: var(--x-pagination-bg, transparent);
+    color: var(--x-pagination-color, inherit);
+    font: inherit;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, opacity .2s ease;
+}
+
+.x-pagination--custom .x-pagination__control:not(:disabled):hover,
+.x-pagination--custom .x-pagination__control:not(:disabled):focus-visible,
+.x-pagination__control--custom:not(:disabled):hover,
+.x-pagination__control--custom:not(:disabled):focus-visible {
+    background: var(--x-pagination-hover-bg, var(--x-pagination-bg, transparent));
+    color: var(--x-pagination-hover-color, var(--x-pagination-color, inherit));
+    border-color: var(--x-pagination-hover-border, var(--x-pagination-border, currentColor));
+}
+
+.x-pagination--custom .x-pagination__page.is-active,
+.x-pagination__control--custom.x-pagination__page.is-active {
+    background: var(--x-pagination-active-bg, var(--x-pagination-hover-bg, var(--x-pagination-bg, transparent)));
+    color: var(--x-pagination-active-color, var(--x-pagination-hover-color, var(--x-pagination-color, inherit)));
+}
+
+.x-pagination--custom .x-pagination__control:focus-visible,
+.x-pagination__control--custom:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.x-pagination-new--fade {
+    animation: x-pagination-fade .35s ease both;
+}
+
+.x-pagination-new--slide {
+    animation: x-pagination-slide .4s ease both;
+}
+
+@keyframes x-pagination-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes x-pagination-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes x-pagination-slide {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 639px) {
+    .x-pagination__list {
+        gap: .3rem;
+    }
+
+    .x-pagination__direction {
+        min-width: 2.25em;
+    }
+
+    .x-pagination__page {
+        min-width: 2.25em;
+        padding-left: .5em;
+        padding-right: .5em;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .x-pagination-new--fade,
+    .x-pagination-new--slide,
+    .x-pagination__spinner {
+        animation: none !important;
+    }
+
+    .x-pagination--custom .x-pagination__control,
+    .x-pagination__control--custom {
+        transition: none;
+    }
+}
