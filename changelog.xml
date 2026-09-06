@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.11</version>
+    <fix>
+      <item>Corretto Load More quando YOOtheme renderizza l’elemento dopo l’avvio degli script: il controllo viene inizializzato automaticamente senza dover forzare manualmente l’evento del Builder.</item>
+      <item>Aggiunto un bridge di lifecycle con retry brevi e limitati che richiama il normale ciclo yootheme:builder:render solo quando trova un elemento Load More ancora non inizializzato.</item>
+      <item>Il controllo è limitato nel tempo e non usa MutationObserver permanenti, evitando loop, listener duplicati e regressioni sulle pagine già funzionanti.</item>
+      <item>Conservata integralmente la logica 1.3.10 di verifica della Grid e della pagina successiva.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.10</version>
     <fix>
       <item>Corretto Load More quando la pagina successiva non contiene più la Grid degli articoli: altre Grid del template non vengono più scambiate per la sorgente collegata.</item>
