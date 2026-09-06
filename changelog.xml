@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.13</version>
+    <fix>
+      <item>Corretto Load More nel Builder YOOtheme quando una modifica di stile, come l’allineamento del testo, aggiorna lo stesso elemento senza creare un nuovo root.</item>
+      <item>Il controllo del Builder osserva ora soltanto il singolo elemento Load More interessato per variazioni di contenuto e degli attributi class, hidden e disabled, ripristinando lo stato di anteprima solo quando necessario.</item>
+      <item>Se YOOtheme sostituisce il pulsante interno o riscrive le classi durante un re-render parziale, Load More torna automaticamente visibile e configurabile senza dover rimuovere e reinserire l’elemento.</item>
+      <item>Gli observer aggiuntivi restano confinati al Builder e sono protetti da controlli di stato, senza introdurre loop o attività nel frontend.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.12</version>
     <fix>
       <item>Corretto il riconoscimento del Builder YOOtheme quando Load More viene renderizzato dentro l’iframe di anteprima: il plugin controlla ora anche il contesto parent/top oltre all’URL del documento corrente.</item>
