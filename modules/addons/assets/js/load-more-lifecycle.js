@@ -76,7 +76,7 @@
   }
 
   function dispatchLifecycle() {
-    if (eventScheduled) return;
+    if (isBuilder() || eventScheduled) return;
 
     eventScheduled = true;
     queueMicrotask(() => {
@@ -114,7 +114,6 @@
     builderRefreshScheduled = false;
     const roots = [...pendingRoots];
     pendingRoots.clear();
-    let touched = false;
 
     roots.forEach(root => {
       if (!root || !root.isConnected) return;
@@ -122,11 +121,8 @@
 
       if (builderNeedsRefresh(root)) {
         refreshBuilderRoot(root);
-        touched = true;
       }
     });
-
-    if (touched) dispatchLifecycle();
   }
 
   function queueBuilderRefresh(root) {
@@ -136,7 +132,7 @@
     if (builderRefreshScheduled) return;
 
     builderRefreshScheduled = true;
-    queueMicrotask(flushBuilderRefresh);
+    window.requestAnimationFrame(flushBuilderRefresh);
   }
 
   function observeBuilderRoot(root) {
@@ -173,12 +169,10 @@
     const roots = [...document.querySelectorAll(ROOT)];
 
     if (isBuilder()) {
-      roots.forEach(observeBuilderRoot);
-      const pending = roots.filter(builderNeedsRefresh);
-      if (!pending.length) return;
-
-      pending.forEach(refreshBuilderRoot);
-      dispatchLifecycle();
+      roots.forEach(root => {
+        observeBuilderRoot(root);
+        if (builderNeedsRefresh(root)) queueBuilderRefresh(root);
+      });
       return;
     }
 

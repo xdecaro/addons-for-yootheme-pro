@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.14</version>
+    <fix>
+      <item>Corretto il blocco del Builder YOOtheme che poteva comparire dopo modifiche di stile o re-render parziali di Load More.</item>
+      <item>Nel Builder il bridge di lifecycle non genera più eventi sintetici yootheme:builder:render: il ripristino dell’anteprima avviene direttamente senza interferire con il lifecycle interno di YOOtheme.</item>
+      <item>Gli aggiornamenti del controllo Load More nel Builder vengono ora accodati al frame successivo tramite requestAnimationFrame, lasciando terminare prima il rendering DOM di YOOtheme.</item>
+      <item>La logica frontend resta invariata: gli eventi di lifecycle di supporto continuano a essere usati solo fuori dal Builder quando necessari.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.13</version>
     <fix>
       <item>Corretto Load More nel Builder YOOtheme quando una modifica di stile, come l’allineamento del testo, aggiorna lo stesso elemento senza creare un nuovo root.</item>
