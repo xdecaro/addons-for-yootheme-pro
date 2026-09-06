@@ -38,7 +38,9 @@ Gruppo: **XDECARO**
 Nome elemento: **Pagination by xdecaro**  
 Identificativo interno: `pagination-xdecaro`
 
-Nel Builder le modalità a clic sono testabili in anteprima senza aggiornare l'URL e senza generare eventi sintetici del Customizer. **Scroll infinito** resta visibile come anteprima ma non attiva IntersectionObserver nel Builder, per non interferire con l'editing.
+Nel Builder le modalità a clic sono testabili in anteprima senza aggiornare l'URL e senza generare eventi sintetici del Customizer.
+
+Da **1.4.1**, anche **Scroll infinito** è testabile realmente nel Builder. Per evitare le race condition del Customizer non viene usato `IntersectionObserver`: un bridge dedicato esclusivamente all'anteprima ascolta lo scroll dell'iframe in modo passivo e throttled con `requestAnimationFrame`, quindi richiama il controller Pagination già esistente. La logica AJAX non viene duplicata e il frontend continua a usare il proprio `IntersectionObserver` invariato.
 
 ## Nota di migrazione 1.4.0
 
