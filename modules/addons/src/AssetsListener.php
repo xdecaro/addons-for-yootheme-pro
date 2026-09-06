@@ -30,6 +30,11 @@ final class XdecaroAssetsListener
             'defer' => true,
         ]);
 
+        $metadata->set('script:xdecaro-load-more-builder-preview', [
+            'src' => Path::get('../assets/js/load-more-builder-preview.js') . '?v=' . $version,
+            'defer' => true,
+        ]);
+
         $metadata->set('style:xdecaro-unfold', [
             'href' => Path::get('../assets/css/unfold.css') . '?v=' . $version,
         ]);
