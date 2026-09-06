@@ -9,6 +9,7 @@ $translations = [
         'next' => 'Next',
         'loading' => 'Loading…',
         'end' => 'You have viewed all items',
+        'limit' => 'You have reached the display limit',
         'error' => 'Unable to load the requested page. Please try again.',
     ],
     'it' => [
@@ -17,6 +18,7 @@ $translations = [
         'next' => 'Successivo',
         'loading' => 'Caricamento…',
         'end' => 'Hai visualizzato tutti gli elementi',
+        'limit' => 'Hai raggiunto il limite di visualizzazione',
         'error' => 'Impossibile caricare la pagina richiesta. Riprova.',
     ],
     'fr' => [
@@ -25,6 +27,7 @@ $translations = [
         'next' => 'Suivant',
         'loading' => 'Chargement…',
         'end' => 'Vous avez affiché tous les éléments',
+        'limit' => 'Vous avez atteint la limite d’affichage',
         'error' => 'Impossible de charger la page demandée. Réessayez.',
     ],
     'de' => [
@@ -33,6 +36,7 @@ $translations = [
         'next' => 'Weiter',
         'loading' => 'Wird geladen…',
         'end' => 'Alle Elemente wurden angezeigt',
+        'limit' => 'Das Anzeigelimit wurde erreicht',
         'error' => 'Die angeforderte Seite konnte nicht geladen werden. Bitte erneut versuchen.',
     ],
     'nl' => [
@@ -41,6 +45,7 @@ $translations = [
         'next' => 'Volgende',
         'loading' => 'Laden…',
         'end' => 'Alle items zijn weergegeven',
+        'limit' => 'De weergavelimiet is bereikt',
         'error' => 'De gevraagde pagina kon niet worden geladen. Probeer het opnieuw.',
     ],
     'es' => [
@@ -49,6 +54,7 @@ $translations = [
         'next' => 'Siguiente',
         'loading' => 'Cargando…',
         'end' => 'Has visto todos los elementos',
+        'limit' => 'Has alcanzado el límite de visualización',
         'error' => 'No se ha podido cargar la página solicitada. Inténtalo de nuevo.',
     ],
     'pt' => [
@@ -57,6 +63,7 @@ $translations = [
         'next' => 'Seguinte',
         'loading' => 'A carregar…',
         'end' => 'Todos os itens foram apresentados',
+        'limit' => 'Atingiu o limite de visualização',
         'error' => 'Não foi possível carregar a página pedida. Tente novamente.',
     ],
 ];
@@ -76,6 +83,7 @@ $custom = [
     'next' => trim((string) ($props['next_text'] ?? '')),
     'loading' => trim((string) ($props['loading_text'] ?? '')),
     'end' => trim((string) ($props['end_text'] ?? '')),
+    'limit' => trim((string) ($props['limit_text'] ?? '')),
     'error' => trim((string) ($props['error_text'] ?? '')),
 ];
 
@@ -93,8 +101,13 @@ $style = (string) ($props['control_style'] ?? 'text');
 $size = (string) ($props['control_size'] ?? '');
 $width = (string) ($props['control_width'] ?? '');
 $mode = (string) ($props['mode'] ?? 'loadmore');
+$targetMode = (string) ($props['target_mode'] ?? 'auto');
+$isGallery = $targetMode === 'gallery';
 $icon = (string) ($props['icon'] ?? 'arrow');
 $iconPosition = (string) ($props['icon_position'] ?? 'right');
+$batchSize = $isGallery
+    ? max(1, (int) ($props['gallery_batch_size'] ?? 20))
+    : max(1, (int) ($props['batch_size'] ?? 4));
 
 $buttonClasses = ['x-pagination__control'];
 if ($style === 'custom') {
@@ -172,13 +185,16 @@ $el = $this->el('div', [
         'uk-text-{text_align_breakpoint: center}@{text_align_breakpoint}',
         'uk-text-{text_align_fallback: center}',
     ],
-    'data-x-pagination' => true,
+    'data-x-pagination' => $isGallery ? null : true,
+    'data-x-pagination-gallery' => $isGallery ? true : null,
     'data-mode' => $mode,
-    'data-target-mode' => $props['target_mode'],
+    'data-target-mode' => $targetMode,
     'data-target-selector' => $props['target_selector'],
     'data-item-selector' => $props['item_selector'],
     'data-pagination-selector' => $props['pagination_selector'],
-    'data-batch-size' => max(1, (int) ($props['batch_size'] ?? 4)),
+    'data-initial-size' => max(1, (int) ($props['gallery_initial_size'] ?? 20)),
+    'data-batch-size' => $batchSize,
+    'data-max-loads' => max(0, (int) ($props['max_loads'] ?? 4)),
     'data-threshold' => max(0, (int) ($props['threshold'] ?? 500)),
     'data-animation' => $props['animation'],
     'data-hide-pagination' => !empty($props['hide_pagination']) ? '1' : '0',
@@ -195,12 +211,14 @@ $el = $this->el('div', [
     'data-next-text' => $custom['next'],
     'data-loading-text' => $custom['loading'],
     'data-end-text' => $custom['end'],
+    'data-limit-text' => $custom['limit'],
     'data-error-text' => $custom['error'],
     'data-default-loadmore-text' => $text['loadmore'],
     'data-default-previous-text' => $text['previous'],
     'data-default-next-text' => $text['next'],
     'data-default-loading-text' => $text['loading'],
     'data-default-end-text' => $text['end'],
+    'data-default-limit-text' => $text['limit'],
     'data-default-error-text' => $text['error'],
     'aria-live' => 'polite',
 ]);

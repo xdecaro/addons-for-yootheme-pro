@@ -3,6 +3,22 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.0</version>
+    <addition>
+      <item>Aggiunto il collegamento esplicito Gallery precedente — Locale in Pagination by xdecaro.</item>
+      <item>Aggiunta paginazione locale per Gallery YOOtheme con Elementi iniziali, Elementi per caricamento e Numero massimo caricamenti.</item>
+      <item>Il limite predefinito dei caricamenti Gallery è 4; il valore 0 disattiva il limite.</item>
+      <item>La Gallery locale supporta Carica altri, Scroll infinito, Numerica, Precedente/Successivo e Completa.</item>
+      <item>Aggiunto testo multilingua specifico quando il limite di visualizzazione viene raggiunto prima della fine degli elementi.</item>
+    </addition>
+    <change>
+      <item>La modalità Gallery usa un controller isolato dalla paginazione AJAX delle Grid, evitando richieste start speculative e mantenendo invariato il comportamento esistente di articoli e blog.</item>
+      <item>Nel Builder lo Scroll infinito della Gallery usa un listener passivo e requestAnimationFrame; nel frontend usa IntersectionObserver.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.4.1</version>
     <fix>
       <item>Corretto Scroll infinito nell’anteprima del Builder YOOtheme: ora carica realmente gli elementi successivi durante lo scroll anche nel Customizer.</item>
