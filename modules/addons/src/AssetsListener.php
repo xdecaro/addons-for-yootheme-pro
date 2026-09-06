@@ -20,6 +20,11 @@ final class XdecaroAssetsListener
             'defer' => true,
         ]);
 
+        $metadata->set('script:xdecaro-pagination-builder-infinite', [
+            'src' => Path::get('../assets/js/pagination-builder-infinite.js') . '?v=' . $version,
+            'defer' => true,
+        ]);
+
         $metadata->set('style:xdecaro-unfold', [
             'href' => Path::get('../assets/css/unfold.css') . '?v=' . $version,
         ]);

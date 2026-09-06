@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.4.1</version>
+    <fix>
+      <item>Corretto Scroll infinito nell’anteprima del Builder YOOtheme: ora carica realmente gli elementi successivi durante lo scroll anche nel Customizer.</item>
+      <item>Nel Builder viene usato un listener scroll passivo e throttled con requestAnimationFrame, evitando IntersectionObserver e le race condition già riscontrate con il lifecycle del Customizer.</item>
+      <item>Il bridge dell’anteprima riutilizza il controller AJAX Pagination già esistente tramite il normale percorso loadMore, senza duplicare fetch, deduplicazione o logica di paginazione.</item>
+      <item>Il frontend resta invariato e continua a usare IntersectionObserver per Scroll infinito.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.4.0</version>
     <addition>
       <item>Aggiunto Pagination by xdecaro come unico elemento di navigazione AJAX per Grid e liste paginabili.</item>

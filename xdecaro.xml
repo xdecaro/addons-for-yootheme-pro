@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="system" method="upgrade">
     <name>Essential Addons for YOOtheme Pro</name>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Form, Forms List, Pagination, Unfold and Footer Copyright.</description>
-    <creationDate>2026-09-06</creationDate>
+    <creationDate>2026-09-07</creationDate>
     <copyright>Copyright (C) 2026 Luca De Caro</copyright>
     <license>GNU General Public License version 2 or later</license>
     <author>Luca De Caro</author>
