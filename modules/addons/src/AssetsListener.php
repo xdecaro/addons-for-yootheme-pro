@@ -11,27 +11,12 @@ final class XdecaroAssetsListener
     {
         $version = rawurlencode(self::getVersion());
 
-        $metadata->set('style:xdecaro-load-more', [
-            'href' => Path::get('../assets/css/load-more.css') . '?v=' . $version,
+        $metadata->set('style:xdecaro-pagination', [
+            'href' => Path::get('../assets/css/pagination.css') . '?v=' . $version,
         ]);
 
-        $metadata->set('script:xdecaro-load-more', [
-            'src' => Path::get('../assets/js/load-more.js') . '?v=' . $version,
-            'defer' => true,
-        ]);
-
-        $metadata->set('script:xdecaro-load-more-stability', [
-            'src' => Path::get('../assets/js/load-more-stability.js') . '?v=' . $version,
-            'defer' => true,
-        ]);
-
-        $metadata->set('script:xdecaro-load-more-lifecycle', [
-            'src' => Path::get('../assets/js/load-more-lifecycle.js') . '?v=' . $version,
-            'defer' => true,
-        ]);
-
-        $metadata->set('script:xdecaro-load-more-builder-preview', [
-            'src' => Path::get('../assets/js/load-more-builder-preview.js') . '?v=' . $version,
+        $metadata->set('script:xdecaro-pagination', [
+            'src' => Path::get('../assets/js/pagination.js') . '?v=' . $version,
             'defer' => true,
         ]);
 
