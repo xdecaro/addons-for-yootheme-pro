@@ -6,7 +6,7 @@ Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, svil
 
 - **Form** — mostra un singolo modulo creato con il componente Forms, selezionabile direttamente dal Builder oppure tramite ID manuale.
 - **Forms List** — mostra automaticamente l'elenco dei moduli attivi del componente Forms.
-- **Pagination by xdecaro** — navigazione AJAX per Grid e liste con Carica altri, Scroll infinito, numerica, Precedente/Successivo e modalità completa.
+- **Pagination by xdecaro** — navigazione AJAX per Grid e paginazione locale per Gallery YOOtheme con Carica altri, Scroll infinito, numerica, Precedente/Successivo e modalità completa.
 - **Unfold by xdecaro** — contenitore espandibile con vero sublayout del Builder e contenuti dinamici.
 - **Footer Copyright by xdecaro** — copyright dinamico per il footer con anno corrente automatico, intervallo dall'anno iniziale, nome sito Joomla, link opzionale e testo dei diritti riservati multilingua.
 
