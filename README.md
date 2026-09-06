@@ -6,7 +6,7 @@ Raccolta di elementi personalizzati per **YOOtheme Pro Builder** su Joomla, svil
 
 - **Form** — mostra un singolo modulo creato con il componente Forms, selezionabile direttamente dal Builder oppure tramite ID manuale.
 - **Forms List** — mostra automaticamente l'elenco dei moduli attivi del componente Forms.
-- **Load More by xdecaro** — caricamento progressivo con pulsante oppure Infinite Scroll, senza ricaricare la pagina.
+- **Pagination by xdecaro** — navigazione AJAX per Grid e liste con Carica altri, Scroll infinito, numerica, Precedente/Successivo e modalità completa.
 - **Unfold by xdecaro** — contenitore espandibile con vero sublayout del Builder e contenuti dinamici.
 - **Footer Copyright by xdecaro** — copyright dinamico per il footer con anno corrente automatico, intervallo dall'anno iniziale, nome sito Joomla, link opzionale e testo dei diritti riservati multilingua.
 
@@ -58,6 +58,7 @@ vendor/              autoloader minimo
 tools/               build e validazione
 xdecaro.php           bootstrap del plugin Joomla
 xdecaro.xml           manifest Joomla
+script.php            pulizia file legacy durante gli aggiornamenti
 changelog.xml         changelog per Joomla
 update.xml            feed aggiornamenti Joomla
 ```
@@ -65,24 +66,24 @@ update.xml            feed aggiornamenti Joomla
 ## Documentazione
 
 - [Installazione e migrazione](docs/installation.md)
-- [Load More](docs/load-more.md)
+- [Pagination](docs/pagination.md)
 - [Unfold](docs/unfold.md)
 - [Footer Copyright](docs/footer-copyright.md)
 - [Pubblicazione delle versioni](docs/releasing.md)
 
+## Passaggio dalla serie 1.3.x alla 1.4.x
+
+La versione **1.4.0** rimuove il precedente elemento **Load More by xdecaro** e introduce **Pagination by xdecaro** con una struttura nuova e unica.
+
+Il progetto era ancora in fase di test, quindi non viene mantenuto un alias legacy del vecchio elemento. Prima o dopo l'aggiornamento rimuovi il vecchio Load More dai layout di prova e inserisci il nuovo elemento Pagination.
+
+Durante l'aggiornamento Joomla, `script.php` elimina automaticamente dal plugin installato gli asset JavaScript/CSS e la cartella dell'elemento Load More non più utilizzati.
+
 ## Migrazione dalle versioni 1.1.x
 
-La versione **1.2.0** consolida il progetto e cambia l'identificativo tecnico del plugin da `loadmoreyootheme` a `xdecaro`.
+La versione **1.2.0** ha consolidato l'identificativo tecnico del plugin da `loadmoreyootheme` a `xdecaro`.
 
-Per il sito già configurato con la serie 1.1.x:
-
-1. fai un backup;
-2. disattiva il vecchio plugin `loadmoreyootheme`;
-3. installa `plg_system_xdecaro_1.2.0.zip`;
-4. verifica in YOOtheme Pro che **Load More by xdecaro** e **Unfold by xdecaro** siano disponibili;
-5. solo dopo la verifica, disinstalla il vecchio plugin.
-
-Gli identificativi interni degli elementi del Builder restano invariati per non perdere i layout già salvati.
+Per installazioni storiche della serie 1.1.x, esegui sempre un backup e passa al plugin di sistema `xdecaro` prima di aggiornare alle versioni correnti.
 
 ## Licenza
 
