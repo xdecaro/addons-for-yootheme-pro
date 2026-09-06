@@ -41,11 +41,18 @@
     if(loading)loading.textContent=text(root,'loading');
   }
 
-  function builder(){
+  function builderUrl(value){
     try{
-      const u=new URL(location.href);
+      const u=new URL(String(value||''),location.href);
       return u.searchParams.get('p')==='customizer'||(u.pathname.includes('/administrator/')&&u.searchParams.get('option')==='com_ajax');
     }catch{return false}
+  }
+
+  function builder(){
+    if(builderUrl(location.href))return true;
+    try{if(window.parent&&window.parent!==window&&builderUrl(window.parent.location.href))return true}catch{}
+    try{if(window.top&&window.top!==window&&builderUrl(window.top.location.href))return true}catch{}
+    return false;
   }
 
   function candidateGrids(doc){
