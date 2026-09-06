@@ -25,6 +25,11 @@ final class XdecaroAssetsListener
             'defer' => true,
         ]);
 
+        $metadata->set('script:xdecaro-load-more-lifecycle', [
+            'src' => Path::get('../assets/js/load-more-lifecycle.js') . '?v=' . $version,
+            'defer' => true,
+        ]);
+
         $metadata->set('style:xdecaro-unfold', [
             'href' => Path::get('../assets/css/unfold.css') . '?v=' . $version,
         ]);
