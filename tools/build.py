@@ -20,6 +20,7 @@ UPDATE_FEED = ROOT / "update.xml"
 PACKAGE_ENTRIES = [
     ROOT / "xdecaro.php",
     ROOT / "xdecaro.xml",
+    ROOT / "script.php",
     ROOT / "README.md",
     ROOT / "LICENSE",
     ROOT / "vendor",
@@ -30,6 +31,13 @@ LEGACY_PATHS = [
     ROOT / "loadmoreyootheme.php",
     ROOT / "loadmoreyootheme.xml",
     ROOT / "modules" / "loadmore",
+    ROOT / "modules" / "addons" / "elements" / "load-more",
+    ROOT / "modules" / "addons" / "assets" / "css" / "load-more.css",
+    ROOT / "modules" / "addons" / "assets" / "js" / "load-more.js",
+    ROOT / "modules" / "addons" / "assets" / "js" / "load-more-stability.js",
+    ROOT / "modules" / "addons" / "assets" / "js" / "load-more-lifecycle.js",
+    ROOT / "modules" / "addons" / "assets" / "js" / "load-more-visibility.js",
+    ROOT / "modules" / "addons" / "assets" / "js" / "load-more-builder-preview.js",
 ]
 
 
@@ -63,6 +71,10 @@ def validate() -> str:
     plugin_filename = manifest_root.find("./files/filename[@plugin='xdecaro']")
     if plugin_filename is None or (plugin_filename.text or "").strip() != "xdecaro.php":
         fail("Il manifest deve dichiarare <filename plugin=\"xdecaro\">xdecaro.php</filename>")
+
+    script_file = (manifest_root.findtext("scriptfile") or "").strip()
+    if script_file != "script.php":
+        fail("Il manifest deve dichiarare <scriptfile>script.php</scriptfile>")
 
     for entry in PACKAGE_ENTRIES:
         if not entry.exists():
@@ -123,7 +135,7 @@ def write_update_feed(version: str, package_name: str, digest: str) -> None:
 <updates>
   <update>
     <name>Essential Addons for YOOtheme Pro</name>
-    <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Load More, Infinite Scroll, Unfold and Footer Copyright.</description>
+    <description>Essential custom addons for YOOtheme Pro Builder by xdecaro: Form, Forms List, Pagination, Unfold and Footer Copyright.</description>
     <element>xdecaro</element>
     <type>plugin</type>
     <folder>system</folder>
