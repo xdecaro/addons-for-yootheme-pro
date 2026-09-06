@@ -22,14 +22,28 @@
     .trim()
     .toLowerCase();
 
-  function isBuilder() {
+  function isBuilderUrl(value) {
     try {
-      const url = new URL(location.href);
+      const url = new URL(String(value || ''), location.href);
       return url.searchParams.get('p') === 'customizer' ||
         (url.pathname.includes('/administrator/') && url.searchParams.get('option') === 'com_ajax');
     } catch {
       return false;
     }
+  }
+
+  function isBuilder() {
+    if (isBuilderUrl(location.href)) return true;
+
+    try {
+      if (window.parent && window.parent !== window && isBuilderUrl(window.parent.location.href)) return true;
+    } catch {}
+
+    try {
+      if (window.top && window.top !== window && isBuilderUrl(window.top.location.href)) return true;
+    } catch {}
+
+    return false;
   }
 
   function control(root) {

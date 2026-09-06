@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.3.12</version>
+    <fix>
+      <item>Corretto il riconoscimento del Builder YOOtheme quando Load More viene renderizzato dentro l’iframe di anteprima: il plugin controlla ora anche il contesto parent/top oltre all’URL del documento corrente.</item>
+      <item>Load More e Infinite Scroll non eseguono più la logica AJAX frontend dentro il Builder, evitando che il controllo venga nascosto dopo essere comparso.</item>
+      <item>Aggiunto nel solo Builder un MutationObserver limitato a childList/subtree che intercetta esclusivamente nuovi elementi Load More inseriti dai re-render dinamici di YOOtheme.</item>
+      <item>L’observer non controlla attributi, non viene attivato nel frontend e richiama il normale lifecycle solo quando compare un nuovo Load More, evitando loop e regressioni della precedente implementazione.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.3.11</version>
     <fix>
       <item>Corretto Load More quando YOOtheme renderizza l’elemento dopo l’avvio degli script: il controllo viene inizializzato automaticamente senza dover forzare manualmente l’evento del Builder.</item>
