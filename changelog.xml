@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.4</version>
+    <fix>
+      <item>Corretta la regressione della Gallery locale che, dopo Carica altri o un aggiornamento UIkit, poteva reinizializzare Pagination e rendere visibili tutti gli elementi invece del solo blocco successivo.</item>
+      <item>Lo stato della Gallery viene ora preservato durante i re-render YOOtheme: visibleCount, numero di caricamenti e pagina corrente non vengono azzerati quando la configurazione resta invariata.</item>
+      <item>Il MutationObserver ignora i riordini degli stessi nodi e viene temporaneamente sospeso durante gli aggiornamenti UIkit, evitando re-init causati dal layout interno della Gallery.</item>
+      <item>La reinizializzazione valida prima il nuovo target e non ripristina più tutti gli elementi nascosti durante stati DOM transitori; Fade e Slide continuano a partire solo sugli elementi appena rivelati.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.3</version>
     <fix>
       <item>Corretto il comportamento Animazione elementi di Pagination by xdecaro per Gallery locale e Grid AJAX, sia nel Builder YOOtheme sia nel frontend.</item>
