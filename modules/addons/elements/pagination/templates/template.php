@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\Factory;
 
 $translations = [
@@ -11,6 +13,7 @@ $translations = [
         'end' => 'You have viewed all items',
         'limit' => 'You have reached the display limit',
         'error' => 'Unable to load the requested page. Please try again.',
+        'pagination' => 'Pagination',
     ],
     'it' => [
         'loadmore' => 'Carica altri',
@@ -20,6 +23,7 @@ $translations = [
         'end' => 'Hai visualizzato tutti gli elementi',
         'limit' => 'Hai raggiunto il limite di visualizzazione',
         'error' => 'Impossibile caricare la pagina richiesta. Riprova.',
+        'pagination' => 'Paginazione',
     ],
     'fr' => [
         'loadmore' => 'Charger plus',
@@ -29,6 +33,7 @@ $translations = [
         'end' => 'Vous avez affiché tous les éléments',
         'limit' => 'Vous avez atteint la limite d’affichage',
         'error' => 'Impossible de charger la page demandée. Réessayez.',
+        'pagination' => 'Pagination',
     ],
     'de' => [
         'loadmore' => 'Mehr laden',
@@ -38,6 +43,7 @@ $translations = [
         'end' => 'Alle Elemente wurden angezeigt',
         'limit' => 'Das Anzeigelimit wurde erreicht',
         'error' => 'Die angeforderte Seite konnte nicht geladen werden. Bitte erneut versuchen.',
+        'pagination' => 'Seitennavigation',
     ],
     'nl' => [
         'loadmore' => 'Meer laden',
@@ -47,6 +53,7 @@ $translations = [
         'end' => 'Alle items zijn weergegeven',
         'limit' => 'De weergavelimiet is bereikt',
         'error' => 'De gevraagde pagina kon niet worden geladen. Probeer het opnieuw.',
+        'pagination' => 'Paginering',
     ],
     'es' => [
         'loadmore' => 'Cargar más',
@@ -56,6 +63,7 @@ $translations = [
         'end' => 'Has visto todos los elementos',
         'limit' => 'Has alcanzado el límite de visualización',
         'error' => 'No se ha podido cargar la página solicitada. Inténtalo de nuevo.',
+        'pagination' => 'Paginación',
     ],
     'pt' => [
         'loadmore' => 'Carregar mais',
@@ -65,6 +73,7 @@ $translations = [
         'end' => 'Todos os itens foram apresentados',
         'limit' => 'Atingiu o limite de visualização',
         'error' => 'Não foi possível carregar a página pedida. Tente novamente.',
+        'pagination' => 'Paginação',
     ],
 ];
 
@@ -99,12 +108,16 @@ $custom = [
 
 $text = [];
 foreach ($defaults as $key => $value) {
-    $text[$key] = $custom[$key] !== '' ? $custom[$key] : $value;
+    $text[$key] = isset($custom[$key]) && $custom[$key] !== '' ? $custom[$key] : $value;
 }
 
+$instanceSeed = isset($node->id) ? (string) $node->id : '';
+if ($instanceSeed === '') {
+    $instanceSeed = json_encode($props) . '-' . uniqid('', true);
+}
 $instanceId = !empty($attrs['id'])
     ? (string) $attrs['id']
-    : 'x-pagination-' . substr(md5(json_encode($props)), 0, 10);
+    : 'x-pagination-' . substr(md5($instanceSeed), 0, 10);
 $attrs['id'] = $instanceId;
 
 $style = (string) ($props['control_style'] ?? 'text');
@@ -238,7 +251,6 @@ $el = $this->el('div', [
     'data-default-end-text' => $text['end'],
     'data-default-limit-text' => $text['limit'],
     'data-default-error-text' => $text['error'],
-    'aria-live' => 'polite',
 ]);
 
 ?>
@@ -263,9 +275,9 @@ $el = $this->el('div', [
             <span data-x-pagination-loading-label><?= htmlspecialchars($text['loading'], ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     <?php else: ?>
-        <nav class="x-pagination__nav" data-x-pagination-nav aria-label="Pagination" hidden></nav>
+        <nav class="x-pagination__nav" data-x-pagination-nav aria-label="<?= htmlspecialchars($text['pagination'], ENT_QUOTES, 'UTF-8') ?>" tabindex="-1" hidden></nav>
     <?php endif; ?>
 
-    <div class="x-pagination__message" data-x-pagination-message hidden></div>
+    <div class="x-pagination__message" data-x-pagination-message role="status" aria-atomic="true" hidden></div>
 
 <?= $el->end() ?>
