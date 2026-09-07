@@ -9,8 +9,11 @@
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loadmore],
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-sentinel],
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loading],
-.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-nav],
-.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-message] {
+.x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-nav] {
+    display: none !important;
+}
+
+.x-pagination:not(.is-ready):not(.is-finished):not(.is-builder-preview) [data-x-pagination-message] {
     display: none !important;
 }
 
@@ -197,6 +200,6 @@
 
     .x-pagination--custom .x-pagination__control,
     .x-pagination__control--custom {
-        transition: none;
+        transition: none !important;
     }
 }
