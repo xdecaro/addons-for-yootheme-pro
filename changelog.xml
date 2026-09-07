@@ -3,6 +3,16 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.7</version>
+    <change>
+      <item>Aggiornati Pagination, Unfold e Footer Copyright con gli affinamenti inclusi nel pacchetto 1.5.7.</item>
+      <item>Gli asset CSS e JavaScript vengono versionati automaticamente usando la versione del manifest, riducendo i problemi di cache dopo gli aggiornamenti.</item>
+      <item>Aggiornata la compatibilità documentata per Joomla 4.4, Joomla 5 e Joomla 6.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.6</version>
     <fix>
       <item>Corretta la percezione di doppia animazione in Pagination: il nuovo blocco di elementi usa ora un’unica animazione simultanea, senza ritardi progressivi tra foto o articoli.</item>

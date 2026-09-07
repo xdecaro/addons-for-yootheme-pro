@@ -4,7 +4,6 @@
   const ROOT = '[data-x-pagination-gallery]';
   const GRID = '.uk-grid,[uk-grid],[data-uk-grid]';
   const states = new WeakMap();
-  const originalDisplay = new WeakMap();
   const animationBase = new WeakMap();
   const pendingRoots = new Set();
   let pendingFrame = 0;
@@ -103,45 +102,20 @@
     return qa(host, root.dataset.itemSelector || ':scope > *').filter(item => !item.matches(ROOT));
   }
 
-  function commonAncestor(a, b) {
-    let node = a || null;
-    while (node && b && !node.contains(b)) node = node.parentElement;
-    return node || a?.parentElement || b?.parentElement || document.body || document.documentElement;
-  }
-
   function sameItems(a, b) {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-    const set = new Set(a);
-    return b.every(item => set.has(item));
-  }
-
-  function storeDisplay(item) {
-    if (originalDisplay.has(item)) return;
-    originalDisplay.set(item, {
-      value: item.style.getPropertyValue('display'),
-      priority: item.style.getPropertyPriority('display'),
-      hidden: item.hidden,
-    });
+    return a.every((item, index) => item === b[index]);
   }
 
   function hideItem(item) {
-    storeDisplay(item);
-    item.hidden = true;
     item.setAttribute('data-x-pagination-gallery-hidden', '1');
-    item.style.setProperty('display', 'none', 'important');
+    item.classList.add('x-pagination-gallery-hidden');
   }
 
   function showItem(item) {
-    const original = originalDisplay.get(item);
+    if (!item.hasAttribute('data-x-pagination-gallery-hidden')) return;
     item.removeAttribute('data-x-pagination-gallery-hidden');
-    if (original) {
-      item.hidden = original.hidden;
-      if (original.value) item.style.setProperty('display', original.value, original.priority || '');
-      else item.style.removeProperty('display');
-    } else {
-      item.hidden = false;
-      item.style.removeProperty('display');
-    }
+    item.classList.remove('x-pagination-gallery-hidden');
   }
 
   function restoreItems(list) {
@@ -164,7 +138,6 @@
       window.CSS.supports('translate', '0 1px');
 
     return {
-      mode,
       canTranslate,
       duration: slide ? 400 : 350,
       frames: slide && canTranslate
@@ -210,10 +183,13 @@
 
   function releaseUiMutationGuard(state) {
     if (!state) return;
+    let pending = state.pendingMutations;
     try {
-      state.contentObserver?.takeRecords();
+      pending = state.contentObserver?.takeRecords().length > 0 || pending;
     } catch {}
     state.suppressMutations = false;
+    state.pendingMutations = false;
+    if (pending) state.checkContent?.();
   }
 
   function updateUi(host, afterUpdate = null, state = null) {
@@ -239,9 +215,8 @@
   function animate(list, mode, spec = animationSpec(mode)) {
     if (!spec) return;
 
-    list.forEach((item, index) => {
+    list.forEach(item => {
       if (!item) return;
-      const delay = 0;
 
       if (!item.isConnected) {
         restoreAnimationBase(item);
@@ -253,7 +228,6 @@
           const animation = item.animate(spec.frames, {
             duration: spec.duration,
             easing: 'ease',
-            delay,
             fill: 'none',
           });
           restoreAnimationBase(item);
@@ -264,10 +238,8 @@
 
       restoreAnimationBase(item);
       item.classList.add(`x-pagination-new--${spec.fallbackMode}`);
-      item.style.animationDelay = `${delay}ms`;
       item.addEventListener('animationend', () => {
         item.classList.remove(`x-pagination-new--${spec.fallbackMode}`);
-        item.style.animationDelay = '';
       }, { once: true });
     });
   }
@@ -387,7 +359,14 @@
 
   function finish(root, state, reason = 'end', showMessage = true) {
     state?.observer?.disconnect();
-    if (state) state.observer = null;
+    if (state) {
+      state.observer = null;
+      if (state.fallbackHandler) {
+        window.removeEventListener('scroll', state.fallbackHandler);
+        window.removeEventListener('resize', state.fallbackHandler);
+        state.fallbackHandler = null;
+      }
+    }
     root.classList.add('is-finished');
     root.classList.remove('is-ready');
     const button = q(root, '[data-x-pagination-loadmore]');
@@ -488,13 +467,32 @@
     } finally {
       state.loading = false;
       setBusy(root, false);
+      if (!root.classList.contains('is-finished') && state.fallbackHandler) {
+        window.setTimeout(state.fallbackHandler, 100);
+      }
     }
   }
 
   function setupInfinite(root, state) {
     const sentinel = q(root, '[data-x-pagination-sentinel]');
-    if (!sentinel || isBuilder() || !('IntersectionObserver' in window)) return;
+    if (!sentinel || isBuilder()) return;
     const distance = Math.max(0, parseInt(root.dataset.threshold || '500', 10) || 500);
+    if (!('IntersectionObserver' in window)) {
+      let frame = 0;
+      state.fallbackHandler = () => {
+        if (frame || states.get(root) !== state || !root.isConnected) return;
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          const rect = sentinel.getBoundingClientRect();
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          if (rect.top <= viewportHeight + distance && rect.bottom >= -distance) loadLocal(root);
+        });
+      };
+      window.addEventListener('scroll', state.fallbackHandler, { passive: true });
+      window.addEventListener('resize', state.fallbackHandler, { passive: true });
+      state.fallbackHandler();
+      return;
+    }
     state.observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) loadLocal(root);
     }, { rootMargin: `0px 0px ${distance}px 0px` });
@@ -504,21 +502,20 @@
   function setupContentObserver(root, state) {
     if (!root || !state?.target || !('MutationObserver' in window)) return;
 
-    const scope = commonAncestor(state.target, root);
+    const scope = state.target.parentElement || state.target;
     if (!scope) return;
 
     let checkFrame = 0;
-    const observer = new MutationObserver(records => {
-      if (state.suppressMutations) return;
-
-      const relevant = records.some(record => !root.contains(record.target));
-      if (!relevant || checkFrame) return;
-
+    const checkContent = () => {
+      if (checkFrame) return;
       checkFrame = window.requestAnimationFrame(() => {
         checkFrame = 0;
-        if (state.suppressMutations) return;
+        if (state.suppressMutations) {
+          state.pendingMutations = true;
+          return;
+        }
 
-        if (!root.isConnected) {
+        if (!root.isConnected || states.get(root) !== state) {
           observer.disconnect();
           return;
         }
@@ -536,10 +533,21 @@
           queueInit(root);
         }
       });
+    };
+
+    const observer = new MutationObserver(records => {
+      const relevant = records.some(record => !root.contains(record.target));
+      if (!relevant) return;
+      if (state.suppressMutations) {
+        state.pendingMutations = true;
+        return;
+      }
+      checkContent();
     });
 
     observer.observe(scope, { childList: true, subtree: true });
     state.contentObserver = observer;
+    state.checkContent = checkContent;
   }
 
   function init(root, force = false) {
@@ -575,6 +583,10 @@
 
     oldState?.observer?.disconnect();
     oldState?.contentObserver?.disconnect();
+    if (oldState?.fallbackHandler) {
+      window.removeEventListener('scroll', oldState.fallbackHandler);
+      window.removeEventListener('resize', oldState.fallbackHandler);
+    }
 
     // Restore only items that really left the current Gallery. Never unhide the
     // nodes that are still part of the validated target before state is rebuilt.
@@ -598,8 +610,11 @@
       loads: preserveProgress ? Math.max(0, oldState.loads || 0) : 0,
       loading: false,
       observer: null,
+      fallbackHandler: null,
       contentObserver: null,
       suppressMutations: false,
+      pendingMutations: false,
+      checkContent: null,
       visibleCount,
       pageSize: initialSize,
       currentPage: preserveProgress
@@ -644,6 +659,19 @@
       pendingRoots.clear();
       roots.forEach(rootElement => init(rootElement, true));
     });
+  }
+
+  function destroyRoot(root) {
+    const state = states.get(root);
+    if (!state) return;
+    state.observer?.disconnect();
+    state.contentObserver?.disconnect();
+    if (state.fallbackHandler) {
+      window.removeEventListener('scroll', state.fallbackHandler);
+      window.removeEventListener('resize', state.fallbackHandler);
+    }
+    restoreItems(state.items || []);
+    states.delete(root);
   }
 
   function boot(force = false) {
@@ -693,25 +721,50 @@
     showPage(root, state, parseInt(pageButton.dataset.xGalleryPage || '1', 10) || 1);
   }, true);
 
-  function startBuilderObserver() {
-    if (!isBuilder() || discoveryObserver || !('MutationObserver' in window)) return;
+  function startDiscoveryObserver() {
+    if (discoveryObserver || !('MutationObserver' in window)) return;
     const targetNode = document.body || document.documentElement;
     if (!targetNode) return;
     discoveryObserver = new MutationObserver(records => {
       records.forEach(record => {
+        if (record.type === 'attributes') {
+          if (record.target.matches?.(ROOT)) queueInit(record.target);
+          return;
+        }
+
         Array.from(record.addedNodes).forEach(node => {
           if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
           if (node.matches?.(ROOT)) queueInit(node);
           qa(node, ROOT).forEach(queueInit);
         });
+        Array.from(record.removedNodes).forEach(node => {
+          if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+          const removedRoots = [node.matches?.(ROOT) ? node : null, ...qa(node, ROOT)].filter(Boolean);
+          window.requestAnimationFrame(() => removedRoots.forEach(root => {
+            if (!root.isConnected) destroyRoot(root);
+          }));
+        });
       });
     });
-    discoveryObserver.observe(targetNode, { childList: true, subtree: true });
+    const options = {
+      childList: true,
+      subtree: true,
+    };
+    if (isBuilder()) {
+      options.attributes = true;
+      options.attributeFilter = [
+        'data-mode', 'data-item-selector', 'data-initial-size', 'data-batch-size',
+        'data-max-loads', 'data-threshold', 'data-animation', 'data-scroll-top',
+        'data-show-end-message', 'data-control-style', 'data-control-size',
+        'data-control-width', 'data-icon', 'data-icon-position',
+      ];
+    }
+    discoveryObserver.observe(targetNode, options);
   }
 
   function start() {
     boot();
-    startBuilderObserver();
+    startDiscoveryObserver();
     if (isBuilder()) {
       window.addEventListener('scroll', builderInfiniteCheck, { passive: true });
       document.addEventListener('scroll', builderInfiniteCheck, { capture: true, passive: true });

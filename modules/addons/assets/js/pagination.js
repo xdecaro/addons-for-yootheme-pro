@@ -5,12 +5,14 @@
   const GRID = '.uk-grid,[uk-grid],[data-uk-grid]';
   const states = new WeakMap();
   const targetHints = new WeakMap();
-  const sourceOriginalHidden = new WeakMap();
+  const sourceVisibilityStates = new WeakMap();
+  const ownedSources = new WeakMap();
   const animationBase = new WeakMap();
   const selfMutating = new WeakSet();
   const pendingRoots = new Set();
   let pendingFrame = 0;
   let discoveryObserver = null;
+  let activeHistoryRoot = null;
 
   const nextWords = [
     'next', 'next page', 'suivant', 'suivante', 'page suivante', 'successiva',
@@ -48,7 +50,11 @@
 
   const absoluteUrl = (href, base = location.href) => {
     try {
-      return href && href !== '#' ? new URL(href, base).href : null;
+      if (!href || href === '#') return null;
+      const url = new URL(href, base);
+      return (url.protocol === 'http:' || url.protocol === 'https:') && url.origin === location.origin
+        ? url.href
+        : null;
     } catch {
       return null;
     }
@@ -145,8 +151,9 @@
     if (doc === document) return root;
 
     if (root.id) {
-      const byId = doc.getElementById(root.id);
-      if (byId) return byId;
+      const localMatches = qa(document, ROOT).filter(candidate => candidate.id === root.id);
+      const remoteMatches = qa(doc, ROOT).filter(candidate => candidate.id === root.id);
+      if (localMatches.length === 1 && remoteMatches.length === 1) return remoteMatches[0];
     }
 
     const localRoots = qa(document, ROOT);
@@ -212,16 +219,45 @@
     return unique.filter(scope => !scope.closest(ROOT));
   }
 
-  function scopeScore(scope) {
+  function structuralDistance(a, b) {
+    if (!a || !b) return 100;
+    const ancestors = new Map();
+    let node = a;
+    let distance = 0;
+    while (node) {
+      ancestors.set(node, distance++);
+      node = node.parentElement;
+    }
+    node = b;
+    distance = 0;
+    while (node) {
+      if (ancestors.has(node)) return distance + ancestors.get(node);
+      distance++;
+      node = node.parentElement;
+    }
+    return 100;
+  }
+
+  function scopeScore(scope, root, doc) {
     const links = qa(scope, 'a[href]');
     const numeric = links.filter(link => /^\d+$/.test(norm(link.textContent))).length;
     const directional = links.filter(link => direction(link)).length;
-    return numeric * 10 + directional * 3 + links.length;
+    const remoteRoot = matchingRoot(root, doc);
+    const targetElement = target(root, doc);
+    const reference = targetElement || remoteRoot;
+    const distance = structuralDistance(scope, reference);
+    const between = targetElement && remoteRoot && isBefore(targetElement, scope) && isBefore(scope, remoteRoot);
+    const sameParent = reference && scope.parentElement === reference.parentElement;
+
+    return numeric * 10 + directional * 3 + links.length +
+      Math.max(0, 1000 - distance * 75) +
+      (between ? 400 : 0) +
+      (sameParent ? 250 : 0);
   }
 
   function bestPaginationScope(doc, root) {
     return paginationScopes(doc, root)
-      .map(scope => [scope, scopeScore(scope)])
+      .map(scope => [scope, scopeScore(scope, root, doc)])
       .sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   }
 
@@ -594,6 +630,7 @@
     mutateRoot(root, () => {
       message.textContent = value || '';
       message.classList.toggle('is-error', error);
+      message.setAttribute('role', error ? 'alert' : 'status');
       message.hidden = !value;
     });
   }
@@ -634,7 +671,14 @@
 
   function finish(root, state, showMessage = true) {
     state?.observer?.disconnect();
-    if (state) state.observer = null;
+    if (state) {
+      state.observer = null;
+      if (state.fallbackHandler) {
+        window.removeEventListener('scroll', state.fallbackHandler);
+        window.removeEventListener('resize', state.fallbackHandler);
+        state.fallbackHandler = null;
+      }
+    }
 
     mutateRoot(root, () => {
       root.classList.add('is-finished');
@@ -655,11 +699,32 @@
     );
   }
 
-  function sourceVisibility(root, hide) {
-    paginationScopes(document, root).forEach(scope => {
-      if (!sourceOriginalHidden.has(scope)) sourceOriginalHidden.set(scope, scope.hidden);
-      scope.hidden = hide ? true : !!sourceOriginalHidden.get(scope);
-    });
+  function releaseSource(root) {
+    const scope = ownedSources.get(root);
+    if (!scope) return;
+
+    const visibility = sourceVisibilityStates.get(scope);
+    visibility?.owners.delete(root);
+    if (visibility && visibility.owners.size === 0) {
+      scope.hidden = visibility.originalHidden;
+      sourceVisibilityStates.delete(scope);
+    }
+    ownedSources.delete(root);
+  }
+
+  function sourceVisibility(root, hide, scope = null) {
+    const previous = ownedSources.get(root);
+    if (previous && (!hide || previous !== scope)) releaseSource(root);
+    if (!hide || !scope) return;
+
+    let visibility = sourceVisibilityStates.get(scope);
+    if (!visibility) {
+      visibility = { originalHidden: scope.hidden, owners: new Set() };
+      sourceVisibilityStates.set(scope, visibility);
+    }
+    visibility.owners.add(root);
+    ownedSources.set(root, scope);
+    scope.hidden = true;
   }
 
   function prefersReducedMotion() {
@@ -678,7 +743,6 @@
       window.CSS.supports('translate', '0 1px');
 
     return {
-      mode,
       canTranslate,
       duration: slide ? 400 : 350,
       frames: slide && canTranslate
@@ -739,9 +803,8 @@
   function animate(list, mode, spec = animationSpec(mode)) {
     if (!spec) return;
 
-    list.forEach((item, index) => {
+    list.forEach(item => {
       if (!item) return;
-      const delay = 0;
 
       if (!item.isConnected) {
         restoreAnimationBase(item);
@@ -753,7 +816,6 @@
           const animation = item.animate(spec.frames, {
             duration: spec.duration,
             easing: 'ease',
-            delay,
             fill: 'none',
           });
           restoreAnimationBase(item);
@@ -764,17 +826,32 @@
 
       restoreAnimationBase(item);
       item.classList.add(`x-pagination-new--${spec.fallbackMode}`);
-      item.style.animationDelay = `${delay}ms`;
       item.addEventListener('animationend', () => {
         item.classList.remove(`x-pagination-new--${spec.fallbackMode}`);
-        item.style.animationDelay = '';
       }, { once: true });
     });
   }
 
-  async function fetchDocument(url) {
-    const response = await fetch(url, {
+  function stateIsCurrent(root, state) {
+    return !!root?.isConnected && states.get(root) === state && !state.controller?.signal.aborted;
+  }
+
+  function abortError() {
+    return new DOMException('Pagination lifecycle changed', 'AbortError');
+  }
+
+  function isAbortError(error) {
+    return error?.name === 'AbortError';
+  }
+
+  async function fetchDocument(url, signal = undefined) {
+    const safeUrl = absoluteUrl(url);
+    if (!safeUrl) throw new Error('Unsafe or cross-origin pagination URL');
+
+    const response = await fetch(safeUrl, {
       credentials: 'same-origin',
+      redirect: 'follow',
+      signal,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'text/html,application/xhtml+xml'
@@ -782,16 +859,18 @@
     });
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (response.url && !absoluteUrl(response.url)) throw new Error('Cross-origin pagination redirect');
     return new DOMParser().parseFromString(await response.text(), 'text/html');
   }
 
-  async function probeNext(root, targetElement, pageSize) {
+  async function probeNext(root, targetElement, pageSize, state) {
     if (!targetElement || pageSize < 1) return null;
     const candidate = deriveNext(location.href, pageSize);
     if (!candidate) return null;
 
     try {
-      const doc = await fetchDocument(candidate);
+      const doc = await fetchDocument(candidate, state.controller?.signal);
+      if (!stateIsCurrent(root, state)) throw abortError();
       const remoteTarget = target(root, doc);
       if (!remoteTarget) return null;
 
@@ -804,6 +883,7 @@
         if (keys.length && !keys.some(key => seen.has(key))) return candidate;
       }
     } catch (error) {
+      if (isAbortError(error)) return null;
       console.debug('[Pagination by xdecaro] Silent next-page probe failed', error);
     }
 
@@ -819,12 +899,13 @@
       return;
     }
 
-    state.visited.add(requested);
-    const doc = await fetchDocument(requested);
+    const doc = await fetchDocument(requested, state.controller?.signal);
+    if (!stateIsCurrent(root, state)) throw abortError();
     const remoteTarget = target(root, doc);
     if (!remoteTarget) throw new Error('Remote target not found');
 
     const remoteItems = items(remoteTarget, root);
+    state.visited.add(requested);
     let added = 0;
 
     remoteItems.forEach(item => {
@@ -851,6 +932,7 @@
     while (state.queue.length < batch && state.next && guard++ < 10) {
       const before = state.queue.length;
       await fetchMorePage(root, state);
+      if (!stateIsCurrent(root, state)) throw abortError();
       if (state.queue.length === before && !state.next) break;
     }
   }
@@ -867,6 +949,7 @@
 
     try {
       await fillQueue(root, state, batch);
+      if (!stateIsCurrent(root, state)) throw abortError();
       const add = state.queue.splice(0, batch);
 
       if (!add.length) {
@@ -889,7 +972,7 @@
 
       if (root.dataset.updateUrl === '1' && state.currentUrl && !isBuilder()) {
         try {
-          history.replaceState({ xPagination: true }, '', state.currentUrl);
+          history.replaceState({ ...(history.state || {}), xPaginationId: root.id }, '', state.currentUrl);
         } catch {}
       }
 
@@ -897,18 +980,21 @@
         finish(root, state, true);
       }
     } catch (error) {
+      if (isAbortError(error)) return;
       console.error('[Pagination by xdecaro]', error);
       setMessage(root, customText(root, 'error', 'Impossibile caricare la pagina richiesta. Riprova.'), true);
     } finally {
+      if (!stateIsCurrent(root, state)) return;
       state.loading = false;
       setBusy(root, false);
       if (!root.classList.contains('is-finished')) {
         setLabel(root, customText(root, 'loadmore', 'Carica altri'));
+        if (state.fallbackHandler) window.setTimeout(state.fallbackHandler, 100);
       }
     }
   }
 
-  async function replacePage(root, url) {
+  async function replacePage(root, url, options = {}) {
     const state = states.get(root);
     if (!state || state.loading || !url) return;
 
@@ -917,7 +1003,10 @@
     setBusy(root, true);
 
     try {
-      const doc = await fetchDocument(url);
+      const safeUrl = absoluteUrl(url);
+      if (!safeUrl) throw new Error('Unsafe or cross-origin pagination URL');
+      const doc = await fetchDocument(safeUrl, state.controller?.signal);
+      if (!stateIsCurrent(root, state)) throw abortError();
       const remoteTarget = target(root, doc);
       if (!remoteTarget) throw new Error('Remote target not found');
 
@@ -929,49 +1018,81 @@
       imported.forEach(item => fragment.appendChild(item));
       state.host.replaceChildren(fragment);
 
-      state.currentUrl = url;
-      state.navigation = navigationModel(doc, root, url, state.pageSize);
+      state.currentUrl = safeUrl;
+      state.navigation = navigationModel(doc, root, safeUrl, state.pageSize);
       renderNavigation(root, state);
-      sourceVisibility(root, root.dataset.hidePagination === '1');
+      sourceVisibility(root, root.dataset.hidePagination === '1', state.sourceScope);
       updateUi(state.host);
 
-      if (root.dataset.updateUrl === '1' && !isBuilder()) {
+      if (options.updateHistory !== false && root.dataset.updateUrl === '1' && !isBuilder()) {
         try {
-          history.replaceState({ xPagination: true }, '', url);
+          activeHistoryRoot = root;
+          history.pushState({ xPaginationId: root.id }, '', safeUrl);
         } catch {}
       }
 
-      if (root.dataset.scrollTop === '1' && !isBuilder()) {
+      if (options.scroll !== false && root.dataset.scrollTop === '1' && !isBuilder()) {
         const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
         state.target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
       }
 
       if (!isBuilder()) {
         document.dispatchEvent(new CustomEvent('xdecaro:pagination:loaded', {
-          detail: { root, target: state.host, items: imported, url, mode: root.dataset.mode }
+          detail: { root, target: state.host, items: imported, url: safeUrl, mode: root.dataset.mode }
         }));
       }
+      if (options.focus !== false) q(root, '[data-x-pagination-nav]')?.focus({ preventScroll: true });
     } catch (error) {
+      if (isAbortError(error)) return;
       console.error('[Pagination by xdecaro]', error);
       setMessage(root, customText(root, 'error', 'Impossibile caricare la pagina richiesta. Riprova.'), true);
     } finally {
+      if (!stateIsCurrent(root, state)) return;
       state.loading = false;
       setBusy(root, false);
     }
   }
 
   function setupInfinite(root, state) {
-    if (isBuilder() || !state.next || !('IntersectionObserver' in window)) return;
+    if (isBuilder() || !state.next) return;
 
     const sentinel = q(root, '[data-x-pagination-sentinel]');
     if (!sentinel) return;
 
     const distance = Math.max(0, parseInt(root.dataset.threshold || '500', 10) || 500);
+    if (!('IntersectionObserver' in window)) {
+      let frame = 0;
+      state.fallbackHandler = () => {
+        if (frame || !stateIsCurrent(root, state)) return;
+        frame = window.requestAnimationFrame(() => {
+          frame = 0;
+          const rect = sentinel.getBoundingClientRect();
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+          if (rect.top <= viewportHeight + distance && rect.bottom >= -distance) loadMore(root);
+        });
+      };
+      window.addEventListener('scroll', state.fallbackHandler, { passive: true });
+      window.addEventListener('resize', state.fallbackHandler, { passive: true });
+      state.fallbackHandler();
+      return;
+    }
+
     state.observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) loadMore(root);
     }, { rootMargin: `0px 0px ${distance}px 0px` });
 
     state.observer.observe(sentinel);
+  }
+
+  function teardownState(root, state) {
+    if (!state) return;
+    state.observer?.disconnect();
+    state.controller?.abort();
+    if (state.fallbackHandler) {
+      window.removeEventListener('scroll', state.fallbackHandler);
+      window.removeEventListener('resize', state.fallbackHandler);
+    }
+    releaseSource(root);
   }
 
   function builderFallback(root) {
@@ -1013,21 +1134,23 @@
     if (!force && states.has(root)) return;
 
     const previousState = states.get(root);
-    previousState?.observer?.disconnect();
+    teardownState(root, previousState);
 
     const targetElement = target(root);
     const list = targetElement ? items(targetElement, root) : [];
 
     if (!targetElement || !list.length) {
       states.delete(root);
-      sourceVisibility(root, false);
       if (isBuilder()) builderFallback(root);
       else mutateRoot(root, () => root.classList.remove('is-ready'));
       return;
     }
 
     const host = itemHost(targetElement, root);
-    if (!host) return;
+    if (!host) {
+      states.delete(root);
+      return;
+    }
 
     const pageSize = list.length;
     const navigation = navigationModel(document, root, location.href, pageSize);
@@ -1036,41 +1159,45 @@
       host,
       pageSize,
       navigation,
+      sourceScope: navigation.scope,
       currentUrl: location.href,
       next: navigation.next,
       queue: [],
       visited: new Set(),
       seen: createSeen(list, location.href),
       loading: false,
-      observer: null
+      observer: null,
+      fallbackHandler: null,
+      controller: 'AbortController' in window ? new AbortController() : null
     };
 
     states.set(root, state);
 
     if ((root.dataset.mode || 'loadmore') === 'loadmore' || root.dataset.mode === 'infinite') {
-      if (!state.next) state.next = await probeNext(root, targetElement, pageSize);
+      if (!state.next) state.next = await probeNext(root, targetElement, pageSize, state);
+      if (!stateIsCurrent(root, state)) return;
 
       if (!state.next && !isBuilder()) {
-        sourceVisibility(root, root.dataset.hidePagination === '1');
+        sourceVisibility(root, root.dataset.hidePagination === '1', navigation.scope);
         finish(root, state, false);
         return;
       }
 
       setReady(root);
-      sourceVisibility(root, root.dataset.hidePagination === '1');
+      sourceVisibility(root, root.dataset.hidePagination === '1', navigation.scope);
       if (root.dataset.mode === 'infinite') setupInfinite(root, state);
       return;
     }
 
     if (!navigation.previous && !navigation.next && navigation.total <= 1 && !isBuilder()) {
-      sourceVisibility(root, root.dataset.hidePagination === '1');
+      sourceVisibility(root, root.dataset.hidePagination === '1', navigation.scope);
       mutateRoot(root, () => root.classList.remove('is-ready'));
       return;
     }
 
     setReady(root);
     renderNavigation(root, state);
-    sourceVisibility(root, root.dataset.hidePagination === '1');
+    sourceVisibility(root, root.dataset.hidePagination === '1', navigation.scope);
   }
 
   function queueInit(root) {
@@ -1103,8 +1230,8 @@
     if (containingRoot && !selfMutating.has(containingRoot)) queueInit(containingRoot);
   }
 
-  function startBuilderObserver() {
-    if (!isBuilder() || discoveryObserver || !('MutationObserver' in window)) return;
+  function startDiscoveryObserver() {
+    if (discoveryObserver || !('MutationObserver' in window)) return;
 
     const targetNode = document.body || document.documentElement;
     if (!targetNode) return;
@@ -1118,19 +1245,34 @@
         }
 
         Array.from(record.addedNodes).forEach(discoverFromNode);
+        Array.from(record.removedNodes).forEach(node => {
+          if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+          const removedRoots = [node.matches?.(ROOT) ? node : null, ...qa(node, ROOT)].filter(Boolean);
+          window.requestAnimationFrame(() => removedRoots.forEach(root => {
+            if (root.isConnected) return;
+            teardownState(root, states.get(root));
+            states.delete(root);
+          }));
+        });
       });
     });
 
-    discoveryObserver.observe(targetNode, {
+    const options = {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: [
+    };
+    if (isBuilder()) {
+      options.attributes = true;
+      options.attributeFilter = [
         'class', 'hidden', 'disabled', 'data-mode', 'data-target-mode', 'data-target-selector',
-        'data-batch-size', 'data-control-style', 'data-control-size', 'data-control-width',
-        'data-icon', 'data-icon-position'
-      ]
-    });
+        'data-item-selector', 'data-pagination-selector', 'data-batch-size', 'data-threshold',
+        'data-animation', 'data-hide-pagination', 'data-update-url', 'data-scroll-top',
+        'data-show-end-message', 'data-control-style', 'data-control-size', 'data-control-width',
+        'data-icon', 'data-icon-position', 'data-loadmore-text', 'data-previous-text',
+        'data-next-text', 'data-loading-text', 'data-end-text', 'data-error-text'
+      ];
+    }
+    discoveryObserver.observe(targetNode, options);
   }
 
   document.addEventListener('click', event => {
@@ -1162,11 +1304,24 @@
     replacePage(root, navigationButton.dataset.xPaginationUrl);
   }, true);
 
+  window.addEventListener('popstate', event => {
+    if (isBuilder()) return;
+    const id = event.state?.xPaginationId || activeHistoryRoot?.id;
+    const root = id ? qa(document, ROOT).find(candidate => candidate.id === id) : null;
+    const state = root ? states.get(root) : null;
+    const mode = root?.dataset.mode || '';
+    if (!root || !state || !['numeric', 'prevnext', 'full'].includes(mode)) return;
+    const url = absoluteUrl(location.href);
+    if (!url || url === state.currentUrl) return;
+    activeHistoryRoot = root;
+    replacePage(root, url, { updateHistory: false, scroll: false, focus: false });
+  });
+
   document.addEventListener('yootheme:builder:render', () => boot(true));
 
   function start() {
     boot();
-    startBuilderObserver();
+    startDiscoveryObserver();
   }
 
   if (document.readyState === 'loading') {
