@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 
@@ -67,6 +69,25 @@ if ($siteUrl === '') {
     } catch (\Throwable $e) {
         $siteUrl = '/';
     }
+}
+
+$isAllowedUrl = static function (string $url): bool {
+    if ($url === '') {
+        return true;
+    }
+
+    $parts = parse_url($url);
+    if ($parts === false) {
+        return false;
+    }
+
+    $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+
+    return $scheme === '' || in_array($scheme, ['http', 'https', 'mailto', 'tel'], true);
+};
+
+if (!$isAllowedUrl($siteUrl)) {
+    $linkSite = false;
 }
 
 $linkTarget = ($props['link_target'] ?? '') === '_blank' ? '_blank' : '';
