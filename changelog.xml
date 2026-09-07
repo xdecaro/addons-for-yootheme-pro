@@ -3,6 +3,19 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.6</version>
+    <fix>
+      <item>Corretta la percezione di doppia animazione in Pagination: il nuovo blocco di elementi usa ora un’unica animazione simultanea, senza ritardi progressivi tra foto o articoli.</item>
+      <item>Fade e Slide mantengono il ricalcolo UIkit e le protezioni introdotte nelle versioni precedenti, ma tutti gli elementi del blocco partono nello stesso frame.</item>
+    </fix>
+    <change>
+      <item>Il testo automatico di Carica altri è ora contestuale: Gallery usa “Carica altre foto”, mentre Grid e Blog usano “Carica altri articoli”.</item>
+      <item>I testi automatici contestuali sono disponibili nelle lingue già supportate; un testo personalizzato nel Builder continua ad avere sempre priorità.</item>
+    </change>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.5</version>
     <fix>
       <item>Corretto il campo Animazione elementi di Pagination by xdecaro che nel frontend poteva risultare sempre impostato su none anche quando nel Builder era stato selezionato Fade o Slide.</item>

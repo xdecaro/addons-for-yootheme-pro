@@ -68,6 +68,16 @@ $translations = [
     ],
 ];
 
+$loadmoreByContext = [
+    'en' => ['gallery' => 'Load more photos', 'content' => 'Load more articles'],
+    'it' => ['gallery' => 'Carica altre foto', 'content' => 'Carica altri articoli'],
+    'fr' => ['gallery' => 'Charger plus de photos', 'content' => 'Charger plus d’articles'],
+    'de' => ['gallery' => 'Mehr Fotos laden', 'content' => 'Mehr Artikel laden'],
+    'nl' => ['gallery' => "Meer foto's laden", 'content' => 'Meer artikelen laden'],
+    'es' => ['gallery' => 'Cargar más fotos', 'content' => 'Cargar más artículos'],
+    'pt' => ['gallery' => 'Carregar mais fotos', 'content' => 'Carregar mais artigos'],
+];
+
 $languageCode = 'en';
 try {
     $tag = Factory::getApplication()->getLanguage()->getTag();
@@ -103,6 +113,10 @@ $width = (string) ($props['control_width'] ?? '');
 $mode = (string) ($props['mode'] ?? 'loadmore');
 $targetMode = (string) ($props['target_mode'] ?? 'auto');
 $isGallery = $targetMode === 'gallery';
+$loadmoreContext = $loadmoreByContext[$languageCode] ?? $loadmoreByContext['en'];
+if ($custom['loadmore'] === '') {
+    $text['loadmore'] = $isGallery ? $loadmoreContext['gallery'] : $loadmoreContext['content'];
+}
 $icon = (string) ($props['icon'] ?? 'arrow');
 $iconPosition = (string) ($props['icon_position'] ?? 'right');
 $batchSize = $isGallery

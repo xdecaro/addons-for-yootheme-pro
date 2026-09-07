@@ -741,7 +741,7 @@
 
     list.forEach((item, index) => {
       if (!item) return;
-      const delay = Math.min(index * 35, 245);
+      const delay = 0;
 
       if (!item.isConnected) {
         restoreAnimationBase(item);
