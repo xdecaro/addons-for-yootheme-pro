@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 use YOOtheme\Metadata;
 use YOOtheme\Path;
 
