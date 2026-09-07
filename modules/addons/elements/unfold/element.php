@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 return [
     'name' => 'unfold-xdecaro',
     'title' => 'Unfold by xdecaro',
