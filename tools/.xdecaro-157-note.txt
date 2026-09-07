@@ -1,0 +1,1 @@
+La sincronizzazione 1.5.7 viene completata nel commit finale.
