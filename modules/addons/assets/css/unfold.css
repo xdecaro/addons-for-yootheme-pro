@@ -15,6 +15,9 @@
 .xd-unfold--ready .xd-unfold__viewport {
     overflow: hidden;
     transition: max-height var(--xd-unfold-duration) cubic-bezier(.4, 0, .2, 1);
+}
+
+.xd-unfold--ready.is-transitioning .xd-unfold__viewport {
     will-change: max-height;
 }
 
