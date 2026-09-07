@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 return [
     'name' => 'pagination-xdecaro',
     'title' => 'Pagination by xdecaro',
