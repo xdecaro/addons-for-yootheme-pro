@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.1</version>
+    <fix>
+      <item>Corretta la Gallery locale quando YOOtheme completa o sostituisce dinamicamente gli elementi dopo l'inizializzazione di Pagination.</item>
+      <item>Pagination osserva ora solo le variazioni strutturali childList nel contenitore comune tra Gallery ed elemento Pagination e reinizializza soltanto se target, host o lista degli elementi sono realmente cambiati.</item>
+      <item>Una Gallery che passa da 20 elementi inizialmente renderizzati a 100 o più elementi viene ricalcolata automaticamente: restano visibili solo gli Elementi iniziali e Carica altri/Scroll infinito tornano disponibili.</item>
+      <item>L'observer non controlla attributi o stili e ignora le modifiche interne ai controlli Pagination, evitando loop e interferenze con il Builder YOOtheme.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.0</version>
     <addition>
       <item>Aggiunto il collegamento esplicito Gallery precedente — Locale in Pagination by xdecaro.</item>
@@ -215,7 +226,7 @@
     <fix>
       <item>Load More non crea più automaticamente un URL start=... quando Joomla non espone una pagina successiva reale.</item>
       <item>Il pulsante viene nascosto subito quando l’elenco corrente non ha una pagina successiva, evitando errori su categorie con pochi articoli.</item>
-      <item>Dopo ogni caricamento il plugin termina appena non trova più un link di paginazione successivo, senza effettuare richieste speculative.</item>
+      <item>Dopo ogni caricamento il plugin termina appena non trova più un link di paginazione successivo, senza effettuare richieste inutili.</item>
     </fix>
   </changelog>
   <changelog>
