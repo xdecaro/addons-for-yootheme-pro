@@ -200,6 +200,6 @@
 
     .x-pagination--custom .x-pagination__control,
     .x-pagination__control--custom {
-        transition: none !important;
+        transition: none;
     }
 }
