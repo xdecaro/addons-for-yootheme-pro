@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 return [
     'name' => 'footer-copyright-xdecaro',
     'title' => 'Footer Copyright by xdecaro',
