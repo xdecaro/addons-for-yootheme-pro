@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.5</version>
+    <fix>
+      <item>Corretto il campo Animazione elementi di Pagination by xdecaro che nel frontend poteva risultare sempre impostato su none anche quando nel Builder era stato selezionato Fade o Slide.</item>
+      <item>La proprietà tecnica generica animation è stata sostituita da items_animation per evitare collisioni con le proprietà native di animazione gestite da YOOtheme Pro.</item>
+      <item>Il template valida il valore dedicato e usa Fade come fallback sicuro per gli elementi esistenti che non possiedono ancora la nuova proprietà.</item>
+      <item>La logica Gallery, il caricamento a blocchi e la Pagination AJAX restano invariati rispetto alla 1.5.4.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.4</version>
     <fix>
       <item>Corretta la regressione della Gallery locale che, dopo Carica altri o un aggiornamento UIkit, poteva reinizializzare Pagination e rendere visibili tutti gli elementi invece del solo blocco successivo.</item>

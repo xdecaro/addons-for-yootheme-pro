@@ -108,6 +108,10 @@ $iconPosition = (string) ($props['icon_position'] ?? 'right');
 $batchSize = $isGallery
     ? max(1, (int) ($props['gallery_batch_size'] ?? 20))
     : max(1, (int) ($props['batch_size'] ?? 4));
+$itemsAnimation = (string) ($props['items_animation'] ?? 'fade');
+if (!in_array($itemsAnimation, ['none', 'fade', 'slide'], true)) {
+    $itemsAnimation = 'fade';
+}
 
 $buttonClasses = ['x-pagination__control'];
 if ($style === 'custom') {
@@ -196,7 +200,7 @@ $el = $this->el('div', [
     'data-batch-size' => $batchSize,
     'data-max-loads' => max(0, (int) ($props['max_loads'] ?? 4)),
     'data-threshold' => max(0, (int) ($props['threshold'] ?? 500)),
-    'data-animation' => $props['animation'],
+    'data-animation' => $itemsAnimation,
     'data-hide-pagination' => !empty($props['hide_pagination']) ? '1' : '0',
     'data-update-url' => !empty($props['update_url']) ? '1' : '0',
     'data-scroll-top' => !empty($props['scroll_top']) ? '1' : '0',
