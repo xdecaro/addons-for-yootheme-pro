@@ -118,8 +118,8 @@ return [
             'show' => 'target_mode == "gallery" && (mode == "loadmore" || mode == "infinite")',
         ],
         'loadmore_text' => [
-            'label' => 'Testo Carica altri',
-            'description' => 'Lascia vuoto per il testo automatico della lingua del sito. Esempio personalizzato: Carica altri articoli.',
+            'label' => 'Testo pulsante',
+            'description' => 'Lascia vuoto per il testo automatico della lingua del sito: Gallery = Carica altre foto; Grid/Blog = Carica altri articoli. Il testo personalizzato ha sempre priorità.',
             'show' => 'mode == "loadmore"',
         ],
         'previous_text' => [
