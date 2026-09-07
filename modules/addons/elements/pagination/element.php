@@ -42,7 +42,7 @@ return [
         'custom_border_width' => 1,
         'custom_radius' => 0,
         'threshold' => 500,
-        'animation' => 'fade',
+        'items_animation' => 'fade',
         'hide_pagination' => true,
         'update_url' => false,
         'scroll_top' => true,
@@ -259,8 +259,9 @@ return [
             'attrs' => ['min' => 0, 'max' => 1500, 'step' => 50],
             'show' => 'mode == "infinite"',
         ],
-        'animation' => [
+        'items_animation' => [
             'label' => 'Animazione elementi',
+            'description' => 'Animazione dedicata agli elementi caricati da Pagination, separata dalle animazioni native di YOOtheme.',
             'type' => 'select',
             'options' => [
                 'Nessuna' => 'none',
@@ -361,7 +362,7 @@ return [
                         [
                             'label' => 'Comportamento',
                             'type' => 'group',
-                            'fields' => ['threshold', 'animation', 'hide_pagination', 'update_url', 'scroll_top', 'show_end_message'],
+                            'fields' => ['threshold', 'items_animation', 'hide_pagination', 'update_url', 'scroll_top', 'show_end_message'],
                         ],
                         [
                             'label' => 'Avanzate sorgente',
