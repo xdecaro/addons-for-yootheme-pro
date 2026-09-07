@@ -1,0 +1,54 @@
+name: Apply 1.5.6 patch
+
+on:
+  push:
+    branches:
+      - fix/pagination-single-animation-context-label-1.5.6
+    paths:
+      - tools/patch_1_5_6.py
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: fix/pagination-single-animation-context-label-1.5.6
+          fetch-depth: 0
+
+      - name: Apply patch
+        run: python3 tools/patch_1_5_6.py
+
+      - name: Validate PHP and JavaScript
+        run: |
+          php -l modules/addons/elements/pagination/element.php
+          php -l modules/addons/elements/pagination/templates/template.php
+          node --check modules/addons/assets/js/pagination-gallery.js
+          node --check modules/addons/assets/js/pagination.js
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse('xdecaro.xml')
+          ET.parse('changelog.xml')
+          PY
+
+      - name: Commit patched files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            modules/addons/assets/js/pagination-gallery.js \
+            modules/addons/assets/js/pagination.js \
+            modules/addons/elements/pagination/templates/template.php \
+            modules/addons/elements/pagination/element.php \
+            xdecaro.xml \
+            changelog.xml
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "fix: synchronize Pagination animations and contextual labels"
+          git push origin HEAD:fix/pagination-single-animation-context-label-1.5.6
