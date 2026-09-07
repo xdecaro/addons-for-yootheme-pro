@@ -1,0 +1,58 @@
+name: Sync 1.5.7 JavaScript
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-157-js.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rebuild JavaScript from verified chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat tools/sync157/pagination-gallery.*.b64 | base64 -d > modules/addons/assets/js/pagination-gallery.js
+          cat tools/sync157/pagination.*.b64 | base64 -d > modules/addons/assets/js/pagination.js
+          echo '2217d6446aa850284127aaa2b47d465b15066692ab23df042abb3bc0b08447f4  modules/addons/assets/js/pagination-gallery.js' | sha256sum -c -
+          echo 'd9019d739e86877f752edbcb5746ae63b90fd729025b698f0ca7172d3d423a80  modules/addons/assets/js/pagination.js' | sha256sum -c -
+
+      - name: Add 1.5.7 changelog entry
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('changelog.xml')
+          text = path.read_text(encoding='utf-8')
+          if '<version>1.5.7</version>' not in text:
+              marker = '<changelogs>\n'
+              entry = '''  <changelog>\n    <element>xdecaro</element>\n    <type>plugin</type>\n    <version>1.5.7</version>\n    <change>\n      <item>Aggiornati Pagination, Unfold e Footer Copyright con gli affinamenti inclusi nel pacchetto 1.5.7.</item>\n      <item>Gli asset CSS e JavaScript vengono versionati automaticamente usando la versione del manifest, riducendo i problemi di cache dopo gli aggiornamenti.</item>\n      <item>Aggiornata la compatibilità documentata per Joomla 4.4, Joomla 5 e Joomla 6.</item>\n    </change>\n  </changelog>\n'''
+              if marker not in text:
+                  raise SystemExit('changelog.xml: marker not found')
+              text = text.replace(marker, marker + entry, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Clean staging files and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tools/sync157
+          rm -f tools/.xdecaro-157-*
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add modules/addons/assets/js/pagination-gallery.js modules/addons/assets/js/pagination.js changelog.xml tools
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit'
+          else
+            git commit -m 'release 1.5.7: sync Pagination JavaScript and changelog'
+            git push origin HEAD:main
+          fi
