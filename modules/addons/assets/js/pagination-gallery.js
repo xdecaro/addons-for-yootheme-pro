@@ -102,6 +102,12 @@
     return qa(host, root.dataset.itemSelector || ':scope > *').filter(item => !item.matches(ROOT));
   }
 
+  function commonAncestor(a, b) {
+    let node = a || null;
+    while (node && b && !node.contains(b)) node = node.parentElement;
+    return node || a?.parentElement || b?.parentElement || document.body || document.documentElement;
+  }
+
   function storeDisplay(item) {
     if (originalDisplay.has(item)) return;
     originalDisplay.set(item, {
@@ -385,12 +391,48 @@
     state.observer.observe(sentinel);
   }
 
+  function setupContentObserver(root, state) {
+    if (!root || !state?.target || !('MutationObserver' in window)) return;
+
+    const scope = commonAncestor(state.target, root);
+    if (!scope) return;
+
+    let checkFrame = 0;
+    const observer = new MutationObserver(records => {
+      const relevant = records.some(record => !root.contains(record.target));
+      if (!relevant || checkFrame) return;
+
+      checkFrame = window.requestAnimationFrame(() => {
+        checkFrame = 0;
+
+        if (!root.isConnected) {
+          observer.disconnect();
+          return;
+        }
+
+        const nextTarget = target(root);
+        const nextHost = nextTarget ? itemHost(nextTarget, root) : null;
+        const nextItems = nextTarget ? items(nextTarget, root) : [];
+        const changedItems = nextItems.length !== state.items.length ||
+          nextItems.some((item, index) => item !== state.items[index]);
+
+        if (nextTarget !== state.target || nextHost !== state.host || changedItems) {
+          queueInit(root);
+        }
+      });
+    });
+
+    observer.observe(scope, { childList: true, subtree: true });
+    state.contentObserver = observer;
+  }
+
   function init(root, force = false) {
     if (!root?.isConnected) return;
     if (!force && states.has(root)) return;
 
     const oldState = states.get(root);
     oldState?.observer?.disconnect();
+    oldState?.contentObserver?.disconnect();
     if (oldState?.items) restoreItems(oldState.items);
 
     const targetElement = target(root);
@@ -418,11 +460,13 @@
       loads: 0,
       loading: false,
       observer: null,
+      contentObserver: null,
       visibleCount: Math.min(initialSize, list.length),
       pageSize: initialSize,
       currentPage: 1,
     };
     states.set(root, state);
+    setupContentObserver(root, state);
     setMessage(root, '');
 
     if (mode === 'loadmore' || mode === 'infinite') {
