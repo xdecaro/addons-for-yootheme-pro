@@ -3,6 +3,16 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.2</version>
+    <fix>
+      <item>Corretto il messaggio finale di Pagination nel frontend: lo stato is-finished non viene più nascosto dalla regola CSS di protezione iniziale.</item>
+      <item>Il messaggio “Hai visualizzato tutti gli elementi” oppure il messaggio di limite raggiunto resta visibile dopo la scomparsa del pulsante Carica altri e del sentinel Scroll infinito.</item>
+      <item>Il comportamento del Builder resta invariato; la modifica è limitata alla visibilità del messaggio nello stato finale sul sito pubblico.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.1</version>
     <fix>
       <item>Corretta la Gallery locale quando YOOtheme completa o sostituisce dinamicamente gli elementi dopo l'inizializzazione di Pagination.</item>
