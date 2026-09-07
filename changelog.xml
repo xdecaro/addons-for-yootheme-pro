@@ -3,6 +3,17 @@
   <changelog>
     <element>xdecaro</element>
     <type>plugin</type>
+    <version>1.5.3</version>
+    <fix>
+      <item>Corretto il comportamento Animazione elementi di Pagination by xdecaro per Gallery locale e Grid AJAX, sia nel Builder YOOtheme sia nel frontend.</item>
+      <item>Fade e Slide vengono avviate dopo il ricalcolo UIkit e nel frame successivo tramite Web Animations API, evitando che il rendering della Gallery annulli opacity o movimento.</item>
+      <item>Gli elementi vengono preparati invisibili prima del ricalcolo per evitare flash; Slide usa la proprietà individuale translate quando supportata così non sovrascrive eventuali transform di YOOtheme.</item>
+      <item>Resta disponibile il fallback CSS per browser senza Web Animations API e viene rispettata l'impostazione prefers-reduced-motion.</item>
+    </fix>
+  </changelog>
+  <changelog>
+    <element>xdecaro</element>
+    <type>plugin</type>
     <version>1.5.2</version>
     <fix>
       <item>Corretto il messaggio finale di Pagination nel frontend: lo stato is-finished non viene più nascosto dalla regola CSS di protezione iniziale.</item>
