@@ -2,24 +2,25 @@
 
 defined('_JEXEC') || exit();
 
-use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\SubscriberInterface;
 use YOOtheme\Application;
 
 final class PlgSystemXdecaro extends CMSPlugin implements SubscriberInterface
 {
-    /** @var CMSApplication */
-    public $app;
+    private bool $modulesLoaded = false;
 
     public static function getSubscribedEvents(): array
     {
-        return ['onAfterInitialise' => 'onAfterInitialise'];
+        return [
+            'onAfterInitialise' => 'loadModules',
+            'onAfterRoute' => 'loadModules',
+        ];
     }
 
-    public function onAfterInitialise(): void
+    public function loadModules(): void
     {
-        if (!class_exists(Application::class, false)) {
+        if ($this->modulesLoaded || !class_exists(Application::class, false)) {
             return;
         }
 
@@ -29,5 +30,6 @@ final class PlgSystemXdecaro extends CMSPlugin implements SubscriberInterface
         }
 
         Application::getInstance()->load(__DIR__ . '/modules/*/bootstrap.php');
+        $this->modulesLoaded = true;
     }
 }
