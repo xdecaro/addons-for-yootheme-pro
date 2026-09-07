@@ -5,6 +5,7 @@
   const GRID = '.uk-grid,[uk-grid],[data-uk-grid]';
   const states = new WeakMap();
   const originalDisplay = new WeakMap();
+  const animationBase = new WeakMap();
   const pendingRoots = new Set();
   let pendingFrame = 0;
   let discoveryObserver = null;
@@ -141,23 +142,111 @@
     list.forEach(showItem);
   }
 
-  function updateUi(host) {
+  function prefersReducedMotion() {
+    try {
+      return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+    } catch {
+      return false;
+    }
+  }
+
+  function animationSpec(mode) {
+    if (!mode || mode === 'none' || prefersReducedMotion()) return null;
+
+    const slide = mode === 'slide';
+    const canTranslate = slide && !!window.CSS && typeof window.CSS.supports === 'function' &&
+      window.CSS.supports('translate', '0 1px');
+
+    return {
+      mode,
+      canTranslate,
+      duration: slide ? 400 : 350,
+      frames: slide && canTranslate
+        ? [{ opacity: 0, translate: '0 16px' }, { opacity: 1, translate: '0 0' }]
+        : [{ opacity: 0 }, { opacity: 1 }],
+      fallbackMode: slide ? 'slide' : 'fade',
+    };
+  }
+
+  function primeAnimation(list, mode) {
+    const spec = animationSpec(mode);
+    if (!spec) return null;
+
+    list.forEach(item => {
+      if (!item) return;
+      if (!animationBase.has(item)) {
+        animationBase.set(item, {
+          opacity: item.style.getPropertyValue('opacity'),
+          opacityPriority: item.style.getPropertyPriority('opacity'),
+          translate: item.style.getPropertyValue('translate'),
+          translatePriority: item.style.getPropertyPriority('translate'),
+        });
+      }
+      item.style.setProperty('opacity', '0');
+      if (spec.canTranslate) item.style.setProperty('translate', '0 16px');
+    });
+
+    return spec;
+  }
+
+  function restoreAnimationBase(item) {
+    const original = animationBase.get(item);
+    if (!original) return;
+
+    if (original.opacity) item.style.setProperty('opacity', original.opacity, original.opacityPriority || '');
+    else item.style.removeProperty('opacity');
+
+    if (original.translate) item.style.setProperty('translate', original.translate, original.translatePriority || '');
+    else item.style.removeProperty('translate');
+
+    animationBase.delete(item);
+  }
+
+  function updateUi(host, afterUpdate = null) {
     window.requestAnimationFrame(() => {
       try {
         if (window.UIkit && typeof window.UIkit.update === 'function') {
           window.UIkit.update(host, 'update');
         }
       } catch {}
+
+      if (typeof afterUpdate === 'function') {
+        window.requestAnimationFrame(afterUpdate);
+      }
     });
   }
 
-  function animate(list, mode) {
-    if (!mode || mode === 'none') return;
+  function animate(list, mode, spec = animationSpec(mode)) {
+    if (!spec) return;
+
     list.forEach((item, index) => {
-      item.classList.add(`x-pagination-new--${mode}`);
-      item.style.animationDelay = `${Math.min(index * 35, 245)}ms`;
+      if (!item) return;
+      const delay = Math.min(index * 35, 245);
+
+      if (!item.isConnected) {
+        restoreAnimationBase(item);
+        return;
+      }
+
+      if (typeof item.animate === 'function') {
+        try {
+          const animation = item.animate(spec.frames, {
+            duration: spec.duration,
+            easing: 'ease',
+            delay,
+            fill: 'none',
+          });
+          restoreAnimationBase(item);
+          animation.finished.catch(() => {});
+          return;
+        } catch {}
+      }
+
+      restoreAnimationBase(item);
+      item.classList.add(`x-pagination-new--${spec.fallbackMode}`);
+      item.style.animationDelay = `${delay}ms`;
       item.addEventListener('animationend', () => {
-        item.classList.remove(`x-pagination-new--${mode}`);
+        item.classList.remove(`x-pagination-new--${spec.fallbackMode}`);
         item.style.animationDelay = '';
       }, { once: true });
     });
@@ -365,10 +454,11 @@
       const end = Math.min(start + state.batchSize, state.items.length);
       const revealed = state.items.slice(start, end);
       revealed.forEach(showItem);
+      const animationMode = root.dataset.animation || 'fade';
+      const animation = primeAnimation(revealed, animationMode);
       state.visibleCount = end;
       state.loads += 1;
-      animate(revealed, root.dataset.animation || 'fade');
-      updateUi(state.host);
+      updateUi(state.host, animation ? () => animate(revealed, animationMode, animation) : null);
 
       if (state.visibleCount >= state.items.length) {
         finish(root, state, 'end');
