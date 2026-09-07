@@ -109,6 +109,12 @@
     return node || a?.parentElement || b?.parentElement || document.body || document.documentElement;
   }
 
+  function sameItems(a, b) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    const set = new Set(a);
+    return b.every(item => set.has(item));
+  }
+
   function storeDisplay(item) {
     if (originalDisplay.has(item)) return;
     originalDisplay.set(item, {
@@ -202,7 +208,17 @@
     animationBase.delete(item);
   }
 
-  function updateUi(host, afterUpdate = null) {
+  function releaseUiMutationGuard(state) {
+    if (!state) return;
+    try {
+      state.contentObserver?.takeRecords();
+    } catch {}
+    state.suppressMutations = false;
+  }
+
+  function updateUi(host, afterUpdate = null, state = null) {
+    if (state) state.suppressMutations = true;
+
     window.requestAnimationFrame(() => {
       try {
         if (window.UIkit && typeof window.UIkit.update === 'function') {
@@ -210,9 +226,13 @@
         }
       } catch {}
 
-      if (typeof afterUpdate === 'function') {
-        window.requestAnimationFrame(afterUpdate);
-      }
+      window.requestAnimationFrame(() => {
+        if (typeof afterUpdate === 'function') afterUpdate();
+
+        // Keep the observer muted for one additional layout frame. UIkit/YOOtheme
+        // can reorder Gallery children while completing its own layout pass.
+        window.requestAnimationFrame(() => releaseUiMutationGuard(state));
+      });
     });
   }
 
@@ -430,7 +450,7 @@
     state.items.forEach((item, index) => index >= start && index < end ? showItem(item) : hideItem(item));
     state.currentPage = nextPage;
     renderNavigation(root, state);
-    updateUi(state.host);
+    updateUi(state.host, null, state);
     if (root.dataset.scrollTop === '1' && !isBuilder()) {
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
       state.target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
@@ -458,7 +478,7 @@
       const animation = primeAnimation(revealed, animationMode);
       state.visibleCount = end;
       state.loads += 1;
-      updateUi(state.host, animation ? () => animate(revealed, animationMode, animation) : null);
+      updateUi(state.host, animation ? () => animate(revealed, animationMode, animation) : null, state);
 
       if (state.visibleCount >= state.items.length) {
         finish(root, state, 'end');
@@ -489,11 +509,14 @@
 
     let checkFrame = 0;
     const observer = new MutationObserver(records => {
+      if (state.suppressMutations) return;
+
       const relevant = records.some(record => !root.contains(record.target));
       if (!relevant || checkFrame) return;
 
       checkFrame = window.requestAnimationFrame(() => {
         checkFrame = 0;
+        if (state.suppressMutations) return;
 
         if (!root.isConnected) {
           observer.disconnect();
@@ -503,10 +526,13 @@
         const nextTarget = target(root);
         const nextHost = nextTarget ? itemHost(nextTarget, root) : null;
         const nextItems = nextTarget ? items(nextTarget, root) : [];
-        const changedItems = nextItems.length !== state.items.length ||
-          nextItems.some((item, index) => item !== state.items[index]);
 
-        if (nextTarget !== state.target || nextHost !== state.host || changedItems) {
+        // YOOtheme may briefly expose an incomplete Gallery while rebuilding it.
+        // Keep the current pagination state until a valid replacement exists.
+        if (!nextTarget || !nextHost || !nextItems.length) return;
+
+        const membershipChanged = !sameItems(nextItems, state.items);
+        if (nextTarget !== state.target || nextHost !== state.host || membershipChanged) {
           queueInit(root);
         }
       });
@@ -521,14 +547,14 @@
     if (!force && states.has(root)) return;
 
     const oldState = states.get(root);
-    oldState?.observer?.disconnect();
-    oldState?.contentObserver?.disconnect();
-    if (oldState?.items) restoreItems(oldState.items);
 
+    // Validate the replacement Gallery before touching the current state. This
+    // prevents a transient YOOtheme render from restoring all hidden items.
     const targetElement = target(root);
     const host = targetElement ? itemHost(targetElement, root) : null;
     const list = targetElement ? items(targetElement, root) : [];
     if (!targetElement || !host || !list.length) {
+      if (oldState) return;
       states.delete(root);
       root.classList.remove('is-ready');
       if (isBuilder()) root.classList.add('is-builder-preview');
@@ -540,20 +566,45 @@
     const parsedMax = parseInt(root.dataset.maxLoads || '4', 10);
     const maxLoads = Number.isFinite(parsedMax) ? Math.max(0, parsedMax) : 4;
     const mode = root.dataset.mode || 'loadmore';
+
+    const preserveProgress = !!oldState &&
+      oldState.mode === mode &&
+      oldState.initialSize === initialSize &&
+      oldState.batchSize === batchSize &&
+      oldState.maxLoads === maxLoads;
+
+    oldState?.observer?.disconnect();
+    oldState?.contentObserver?.disconnect();
+
+    // Restore only items that really left the current Gallery. Never unhide the
+    // nodes that are still part of the validated target before state is rebuilt.
+    if (oldState?.items) {
+      const nextItems = new Set(list);
+      restoreItems(oldState.items.filter(item => item.isConnected && !nextItems.has(item)));
+    }
+
+    const maxPage = Math.max(1, Math.ceil(list.length / initialSize));
+    const visibleCount = preserveProgress
+      ? Math.min(list.length, Math.max(initialSize, oldState.visibleCount || initialSize))
+      : Math.min(initialSize, list.length);
     const state = {
       target: targetElement,
       host,
       items: list,
+      mode,
       initialSize,
       batchSize,
       maxLoads,
-      loads: 0,
+      loads: preserveProgress ? Math.max(0, oldState.loads || 0) : 0,
       loading: false,
       observer: null,
       contentObserver: null,
-      visibleCount: Math.min(initialSize, list.length),
+      suppressMutations: false,
+      visibleCount,
       pageSize: initialSize,
-      currentPage: 1,
+      currentPage: preserveProgress
+        ? Math.min(maxPage, Math.max(1, oldState.currentPage || 1))
+        : 1,
     };
     states.set(root, state);
     setupContentObserver(root, state);
@@ -561,17 +612,24 @@
 
     if (mode === 'loadmore' || mode === 'infinite') {
       list.forEach((item, index) => index < state.visibleCount ? showItem(item) : hideItem(item));
-      updateUi(host);
+      updateUi(host, null, state);
+
       if (state.visibleCount >= list.length) {
-        finish(root, state, 'end', false);
+        finish(root, state, 'end', preserveProgress);
         return;
       }
+
+      if (state.maxLoads > 0 && state.loads >= state.maxLoads) {
+        finish(root, state, 'limit', true);
+        return;
+      }
+
       setReady(root);
       if (mode === 'infinite') setupInfinite(root, state);
       return;
     }
 
-    showPage(root, state, 1);
+    showPage(root, state, state.currentPage);
     setReady(root);
     renderNavigation(root, state);
   }
