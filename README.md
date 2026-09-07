@@ -16,8 +16,9 @@ Le icone degli elementi usano uno stile uniforme, leggero e lineare, con dimensi
 
 ## Requisiti
 
-- Joomla 4, 5 o 6
-- PHP 8.0 o superiore
+- Joomla 4.4 con PHP 8.0 o superiore
+- Joomla 5 con una versione PHP supportata dalla relativa release Joomla
+- Joomla 6 con PHP 8.3 o superiore
 - YOOtheme Pro attivo
 - Per **Form** e **Forms List**: componente **Forms** installato e relativo plugin di sistema attivo
 
@@ -54,7 +55,8 @@ modules/addons/      modulo YOOtheme e asset condivisi
   elements/          elementi del Builder
   src/               listener e logica condivisa
 docs/                documentazione
-vendor/              autoloader minimo
+vendor/              autoloader di compatibilità
+tests/               test di packaging e guardie di regressione
 tools/               build e validazione
 xdecaro.php           bootstrap del plugin Joomla
 xdecaro.xml           manifest Joomla
