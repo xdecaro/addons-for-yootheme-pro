@@ -1,5 +1,7 @@
 <?php
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\Factory;
 
 $translations = [
@@ -47,7 +49,10 @@ $previewMobile = $previewMobileRaw !== '' ? $normalizeLength($previewMobileRaw, 
 $fadeHeight = $normalizeLength($props['fade_height'] ?? '', '90px');
 $duration = max(0, min(1500, (int) ($props['duration'] ?? 450)));
 
-$instanceSeed = isset($node->id) ? (string) $node->id : json_encode($props);
+$instanceSeed = isset($node->id) ? (string) $node->id : '';
+if ($instanceSeed === '') {
+    $instanceSeed = json_encode($props) . '-' . uniqid('', true);
+}
 $instanceId = !empty($attrs['id']) ? (string) $attrs['id'] : 'xd-unfold-' . substr(md5($instanceSeed), 0, 10);
 $attrs['id'] = $instanceId;
 $contentId = $instanceId . '-content';
