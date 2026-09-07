@@ -6,6 +6,10 @@
     display: none !important;
 }
 
+.x-pagination-gallery-hidden {
+    display: none !important;
+}
+
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loadmore],
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-sentinel],
 .x-pagination:not(.is-ready):not(.is-builder-preview) [data-x-pagination-loading],
@@ -18,10 +22,12 @@
 }
 
 .x-pagination__control {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: .45em;
     min-width: 2.5em;
+    min-height: 2.5em;
     cursor: pointer;
 }
 
@@ -181,11 +187,13 @@
     }
 
     .x-pagination__direction {
-        min-width: 2.25em;
+        min-width: 2.75em;
+        min-height: 2.75em;
     }
 
     .x-pagination__page {
-        min-width: 2.25em;
+        min-width: 2.75em;
+        min-height: 2.75em;
         padding-left: .5em;
         padding-right: .5em;
     }
