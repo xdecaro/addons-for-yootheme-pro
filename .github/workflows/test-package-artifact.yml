@@ -1,0 +1,63 @@
+name: Test Package Artifact
+
+on:
+  push:
+    branches:
+      - feature/competitions-dynamic-sources
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: PHP syntax
+        run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+      - name: Validate stable source metadata
+        run: python3 tools/build.py --check
+      - name: Competitions contracts
+        run: |
+          php tests/competitions-source-contract.php
+          php tests/competitions-dynamic-sources-contract.php
+          php tests/competitions-elements-builder-contract.php
+      - name: Build 1.6.0-beta3 test package
+        run: |
+          rm -rf build/test-stage build/plg_system_xdecaro_1.6.0-beta3.zip
+          mkdir -p build/test-stage
+          cp xdecaro.php xdecaro.xml script.php README.md LICENSE build/test-stage/
+          cp -R vendor modules build/test-stage/
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('build/test-stage/xdecaro.xml')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace('<version>1.5.7</version>', '<version>1.6.0-beta3</version>', 1)
+          text = text.replace('<creationDate>2026-09-07</creationDate>', '<creationDate>2026-09-26</creationDate>', 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          (cd build/test-stage && zip -qr ../plg_system_xdecaro_1.6.0-beta3.zip .)
+          sha256sum build/plg_system_xdecaro_1.6.0-beta3.zip > build/SHA256SUMS-beta3.txt
+      - name: Verify ZIP integrity and contents
+        run: |
+          unzip -t build/plg_system_xdecaro_1.6.0-beta3.zip
+          unzip -p build/plg_system_xdecaro_1.6.0-beta3.zip xdecaro.xml | grep '<version>1.6.0-beta3</version>'
+          for element in competition-card match-score standings-table federation-card team-card teams-grid player-card team-roster; do
+            unzip -l build/plg_system_xdecaro_1.6.0-beta3.zip | grep "modules/competitions/elements/${element}/element.php"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta3.zip | grep "modules/competitions/elements/${element}/templates/content.php"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta3.zip | grep "modules/competitions/elements/${element}/templates/template.php"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta3.zip | grep "modules/competitions/elements/${element}/images/icon.svg"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta3.zip | grep "modules/competitions/elements/${element}/images/iconSmall.svg"
+          done
+      - name: Upload test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: yootheme-essential-addons-1.6.0-beta3
+          path: |
+            build/plg_system_xdecaro_1.6.0-beta3.zip
+            build/SHA256SUMS-beta3.txt
+          if-no-files-found: error
