@@ -26,9 +26,9 @@ jobs:
           php tests/competitions-source-contract.php
           php tests/competitions-dynamic-sources-contract.php
           php tests/competitions-elements-builder-contract.php
-      - name: Build 1.6.0-beta1 test package
+      - name: Build 1.6.0-beta2 test package
         run: |
-          rm -rf build/test-stage build/plg_system_xdecaro_1.6.0-beta1.zip
+          rm -rf build/test-stage build/plg_system_xdecaro_1.6.0-beta2.zip
           mkdir -p build/test-stage
           cp xdecaro.php xdecaro.xml script.php README.md LICENSE build/test-stage/
           cp -R vendor modules build/test-stage/
@@ -36,25 +36,25 @@ jobs:
           from pathlib import Path
           path = Path('build/test-stage/xdecaro.xml')
           text = path.read_text(encoding='utf-8')
-          text = text.replace('<version>1.5.7</version>', '<version>1.6.0-beta1</version>', 1)
+          text = text.replace('<version>1.5.7</version>', '<version>1.6.0-beta2</version>', 1)
           text = text.replace('<creationDate>2026-09-07</creationDate>', '<creationDate>2026-09-26</creationDate>', 1)
           path.write_text(text, encoding='utf-8')
           PY
-          (cd build/test-stage && zip -qr ../plg_system_xdecaro_1.6.0-beta1.zip .)
-          sha256sum build/plg_system_xdecaro_1.6.0-beta1.zip > build/SHA256SUMS-beta1.txt
+          (cd build/test-stage && zip -qr ../plg_system_xdecaro_1.6.0-beta2.zip .)
+          sha256sum build/plg_system_xdecaro_1.6.0-beta2.zip > build/SHA256SUMS-beta2.txt
       - name: Verify ZIP integrity and contents
         run: |
-          unzip -t build/plg_system_xdecaro_1.6.0-beta1.zip
-          unzip -p build/plg_system_xdecaro_1.6.0-beta1.zip xdecaro.xml | grep '<version>1.6.0-beta1</version>'
+          unzip -t build/plg_system_xdecaro_1.6.0-beta2.zip
+          unzip -p build/plg_system_xdecaro_1.6.0-beta2.zip xdecaro.xml | grep '<version>1.6.0-beta2</version>'
           for element in competition-card match-score standings-table; do
-            unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep "modules/competitions/elements/${element}/images/icon.svg"
-            unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep "modules/competitions/elements/${element}/images/iconSmall.svg"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta2.zip | grep "modules/competitions/elements/${element}/images/icon.svg"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta2.zip | grep "modules/competitions/elements/${element}/images/iconSmall.svg"
           done
       - name: Upload test package
         uses: actions/upload-artifact@v4
         with:
-          name: yootheme-essential-addons-1.6.0-beta1
+          name: yootheme-essential-addons-1.6.0-beta2
           path: |
-            build/plg_system_xdecaro_1.6.0-beta1.zip
-            build/SHA256SUMS-beta1.txt
+            build/plg_system_xdecaro_1.6.0-beta2.zip
+            build/SHA256SUMS-beta2.txt
           if-no-files-found: error
