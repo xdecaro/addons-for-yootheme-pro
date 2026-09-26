@@ -29,15 +29,15 @@ function builderContains(string $haystack, string $needle, string $message): voi
 
 $elements = [
     'competition-card' => [
-        'field' => "'competition_id'",
+        'field' => "'selected_season_id'",
         'options' => 'XdecaroCompetitionsProvider::competitionOptions()',
     ],
     'match-score' => [
-        'field' => "'match_id'",
+        'field' => "'selected_match_id'",
         'options' => 'XdecaroCompetitionsProvider::matchOptions()',
     ],
     'standings-table' => [
-        'field' => "'season_id'",
+        'field' => "'selected_season_id'",
         'options' => 'XdecaroCompetitionsProvider::competitionOptions()',
     ],
 ];
@@ -48,8 +48,8 @@ foreach ($elements as $directory => $expect) {
 
     builderRead($base . '/images/icon.svg');
     builderRead($base . '/images/iconSmall.svg');
-    builderContains($element, "'icon' => __DIR__ . '/images/icon.svg'", "{$directory} must declare its large icon");
-    builderContains($element, "'iconSmall' => __DIR__ . '/images/iconSmall.svg'", "{$directory} must declare its small icon");
+    builderContains($element, "'icon' => '\${url:images/icon.svg}'", "{$directory} must declare its large icon using the same YOOtheme URL syntax as the existing xdecaro elements");
+    builderContains($element, "'iconSmall' => '\${url:images/iconSmall.svg}'", "{$directory} must declare its small icon using the same YOOtheme URL syntax as the existing xdecaro elements");
     builderContains($element, $expect['field'], "{$directory} must expose its direct selector");
     builderContains($element, "'type' => 'select'", "{$directory} direct selector must be a select field");
     builderContains($element, $expect['options'], "{$directory} must populate the selector from Competitions");
@@ -59,12 +59,15 @@ $provider = builderRead($module . '/src/CompetitionProvider.php');
 builderContains($provider, 'public static function competitionOptions(): array', 'Provider must expose competition choices');
 builderContains($provider, 'public static function matchOptions(): array', 'Provider must expose match choices');
 builderContains($provider, 'public static function competitionBySeasonId(', 'Provider must hydrate Competition Card from the selected season');
-builderContains($provider, 'public static function matchById(', 'Provider must hydrate Match Score from the selected match');
+builderContains($provider, 'public static function match(', 'Provider must expose the public Match resolver used by Match Score');
 
 $competitionTemplate = builderRead($module . '/elements/competition-card/templates/template.php');
 builderContains($competitionTemplate, 'competitionBySeasonId', 'Competition Card must hydrate selected competition data');
 
 $matchTemplate = builderRead($module . '/elements/match-score/templates/template.php');
-builderContains($matchTemplate, 'matchById', 'Match Score must hydrate selected match data');
+builderContains($matchTemplate, "XdecaroCompetitionsProvider::match(null, ['match_id' =>", 'Match Score must hydrate the selected match through the public provider');
+
+$standingsTemplate = builderRead($module . '/elements/standings-table/templates/template.php');
+builderContains($standingsTemplate, 'selected_season_id', 'Standings Table must prefer the direct Competition / Season selector');
 
 echo "PASS: Competitions builder selectors and icons contract\n";
