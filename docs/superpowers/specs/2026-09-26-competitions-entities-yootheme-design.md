@@ -40,6 +40,20 @@ Federation relationship:
 
 YOOtheme selection should follow these relationships so editors are never forced to know technical IDs.
 
+### Builder selector implementation
+
+YOOtheme custom-element `select` fields use a static options list when the element definition is loaded. For this first block, do not add a fragile custom Builder framework merely to live-reload a second select.
+
+Preserve the semantic relationships above with scoped, human-readable composite selectors where live dependency would otherwise be required:
+
+- Team Card: `Competition — Team`
+- Player Card: `Competition — Team — Player`
+- Team Roster: `Competition — Team`
+- Teams Grid: Competition only
+- Federation Card: Federation only
+
+The stored value may encode the necessary internal IDs, but the editor-facing label must remain human-readable and the normal UI must not require the user to type or understand those IDs. If a stable native YOOtheme dependent-select mechanism becomes available later, this presentation can be upgraded without changing the public Competitions contract.
+
 ## First implementation block
 
 ### Federation Card
@@ -60,7 +74,7 @@ No private Organizations fields are exposed.
 
 ### Team Card
 
-Selection: Competition, then Team filtered to approved participating teams of that competition.
+Selection: Competition and Team, represented by a scoped `Competition — Team` selector in the first implementation.
 
 Public fields:
 - id
@@ -91,7 +105,7 @@ Presentation:
 
 ### Player Card
 
-Selection chain: Competition -> Team -> approved roster player.
+Selection relationship: Competition -> Team -> approved roster player, represented by a scoped `Competition — Team — Player` selector in the first implementation.
 
 Public fields may include only:
 - roster_id
@@ -117,7 +131,7 @@ Explicitly excluded from the public YOOtheme contract:
 
 ### Team Roster
 
-Selection chain: Competition -> Team.
+Selection relationship: Competition -> Team, represented by a scoped `Competition — Team` selector in the first implementation.
 
 Only published/approved roster entries are returned.
 
@@ -157,8 +171,8 @@ Public output must fail closed:
 
 Add cached option/catalog helpers for:
 - federation options
-- team options scoped by season/competition
-- roster-player options scoped by season + team
+- scoped competition/team options
+- scoped competition/team/roster-player options
 
 The adapter must degrade gracefully to empty options when Competitions is unavailable or when a method is unavailable.
 
@@ -229,10 +243,8 @@ These can be a following block after federation/team/player/roster integration i
 The feature is successful when a YOOtheme editor can:
 
 1. choose a competition from a real list;
-2. see only participating approved teams for that competition;
-3. choose a team;
-4. render a Team Card or Teams Grid;
-5. see only approved public roster players for that competition/team;
-6. choose one roster player for Player Card or render the complete Team Roster;
-7. choose and render a Federation Card;
-8. do all of the above without entering technical IDs and without the addon reading private component tables.
+2. choose a scoped approved team through a human-readable competition/team option;
+3. render a Team Card or Teams Grid;
+4. choose one approved public roster player through a human-readable competition/team/player option or render the complete Team Roster;
+5. choose and render a Federation Card;
+6. do all of the above without entering technical IDs and without the addon reading private component tables.
