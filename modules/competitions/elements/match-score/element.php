@@ -6,6 +6,8 @@ return [
     'name' => 'xdecaro_match_score',
     'title' => 'Match Score',
     'group' => 'xdecaro',
+    'icon' => '${url:images/icon.svg}',
+    'iconSmall' => '${url:images/iconSmall.svg}',
     'element' => true,
     'width' => 500,
     'templates' => [
@@ -13,11 +15,18 @@ return [
         'content' => __DIR__ . '/templates/content.php',
     ],
     'defaults' => [
+        'selected_match_id' => '',
         'match_status' => '',
         'show_logos' => true,
         'card_style' => 'default',
     ],
     'fields' => [
+        'selected_match_id' => [
+            'label' => 'Match',
+            'type' => 'select',
+            'options' => XdecaroCompetitionsProvider::matchOptions(),
+            'description' => 'Choose an available match. Leave empty when using Dynamic Content or manual overrides.',
+        ],
         'home_team_name' => ['label' => 'Home Team', 'type' => 'text', 'source' => true],
         'home_team_short_name' => ['label' => 'Home Team Short Name', 'type' => 'text', 'source' => true],
         'home_team_logo' => ['label' => 'Home Team Logo', 'type' => 'image', 'source' => true],
@@ -58,6 +67,10 @@ return [
             'fields' => [
                 [
                     'title' => 'Content',
+                    'fields' => ['selected_match_id'],
+                ],
+                [
+                    'title' => 'Overrides',
                     'fields' => ['home_team_name', 'home_team_short_name', 'home_team_logo', 'away_team_name', 'away_team_short_name', 'away_team_logo', 'home_score', 'away_score', 'home_penalties', 'away_penalties', 'match_status', 'match_date', 'kickoff_time', 'stage', 'round_name', 'venue_name'],
                 ],
                 [
