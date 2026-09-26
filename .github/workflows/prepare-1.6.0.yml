@@ -1,0 +1,40 @@
+name: Prepare 1.6.0 changelog
+
+on:
+  push:
+    branches:
+      - feature/competitions-dynamic-sources
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.event.head_commit.message != 'chore: prepare changelog 1.6.0'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/competitions-dynamic-sources
+      - name: Prepend 1.6.0 changelog
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('changelog.xml')
+          text = path.read_text(encoding='utf-8')
+          if '<version>1.6.0</version>' not in text:
+              entry = '''  <changelog>\n    <element>xdecaro</element>\n    <type>plugin</type>\n    <version>1.6.0</version>\n    <addition>\n      <item>Aggiunte sorgenti Dynamic Content native per il componente Competitions.</item>\n      <item>Aggiunti Competition Card, Match Score e Standings Table nel gruppo XDECARO.</item>\n      <item>Aggiunta selezione diretta delle competizioni, delle partite e delle stagioni disponibili dal Builder.</item>\n      <item>Aggiunte icone SVG dedicate e coerenti per i tre nuovi elementi Competitions.</item>\n    </addition>\n    <change>\n      <item>I campi tecnici restano disponibili come override o sorgente dinamica, ma non sono più il percorso principale di configurazione.</item>\n      <item>L'integrazione legge i dati esclusivamente dal servizio pubblico di Competitions senza query dirette alle tabelle del componente.</item>\n    </change>\n  </changelog>\n'''
+              text = text.replace('<changelogs>\n', '<changelogs>\n' + entry, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add changelog.xml
+          if git diff --cached --quiet; then
+            echo "Changelog already prepared"
+          else
+            git commit -m "chore: prepare changelog 1.6.0"
+            git push origin HEAD:feature/competitions-dynamic-sources
+          fi
