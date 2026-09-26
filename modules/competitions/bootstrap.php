@@ -19,7 +19,7 @@ include_once __DIR__ . '/src/Type/QueryType.php';
 return [
     'events' => [
         'source.init' => [
-            XdecaroCompetitionsSourceListener::class => 'initSource',
+            XdecaroCompetitionsSourceListener::class => ['initSource'],
         ],
     ],
 
