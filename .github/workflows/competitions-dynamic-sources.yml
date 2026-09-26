@@ -20,6 +20,10 @@ jobs:
           php-version: '8.2'
           coverage: none
       - name: Contract syntax
-        run: php -l tests/competitions-dynamic-sources-contract.php
+        run: |
+          php -l tests/competitions-dynamic-sources-contract.php
+          php -l tests/competitions-elements-builder-contract.php
       - name: Competitions dynamic sources contract
         run: php tests/competitions-dynamic-sources-contract.php
+      - name: Builder selectors and icons contract
+        run: php tests/competitions-elements-builder-contract.php
