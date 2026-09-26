@@ -6,6 +6,8 @@ return [
     'name' => 'xdecaro_competition_card',
     'title' => 'Competition Card',
     'group' => 'xdecaro',
+    'icon' => '${url:images/icon.svg}',
+    'iconSmall' => '${url:images/iconSmall.svg}',
     'element' => true,
     'width' => 500,
     'templates' => [
@@ -13,12 +15,19 @@ return [
         'content' => __DIR__ . '/templates/content.php',
     ],
     'defaults' => [
+        'selected_season_id' => '',
         'title' => '',
         'meta' => 'Competition',
         'button_text' => 'View competition',
         'card_style' => 'default',
     ],
     'fields' => [
+        'selected_season_id' => [
+            'label' => 'Competition',
+            'type' => 'select',
+            'options' => XdecaroCompetitionsProvider::competitionOptions(),
+            'description' => 'Choose an available competition/season. Leave empty when using Dynamic Content or manual overrides.',
+        ],
         'title' => ['label' => 'Title', 'type' => 'text', 'source' => true],
         'meta' => ['label' => 'Meta', 'type' => 'text', 'source' => true],
         'discipline' => ['label' => 'Discipline', 'type' => 'text', 'source' => true],
@@ -54,7 +63,11 @@ return [
             'fields' => [
                 [
                     'title' => 'Content',
-                    'fields' => ['title', 'meta', 'discipline', 'gender', 'season_year', 'host_city', 'host_country_code', 'start_date', 'end_date', 'team_count', 'link_override', 'button_text'],
+                    'fields' => ['selected_season_id', 'link_override', 'button_text'],
+                ],
+                [
+                    'title' => 'Overrides',
+                    'fields' => ['title', 'meta', 'discipline', 'gender', 'season_year', 'host_city', 'host_country_code', 'start_date', 'end_date', 'team_count'],
                 ],
                 [
                     'title' => 'Style',
