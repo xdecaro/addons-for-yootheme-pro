@@ -8,10 +8,84 @@ final class XdecaroCompetitionsProvider
 {
     private static bool $serviceResolved = false;
     private static mixed $service = null;
+    private static ?array $competitionCatalog = null;
+    private static ?array $matchCatalog = null;
 
     public static function available(): bool
     {
         return self::service() !== null;
+    }
+
+    public static function competitionOptions(): array
+    {
+        $options = ['Choose competition…' => ''];
+
+        foreach (self::competitionCatalog() as $competition) {
+            $seasonId = (int) ($competition['season_id'] ?? 0);
+            if ($seasonId <= 0) {
+                continue;
+            }
+
+            $title = trim((string) ($competition['title'] ?? ''));
+            if ($title === '') {
+                $title = trim((string) ($competition['tournament_name'] ?? 'Competition'));
+            }
+
+            $year = trim((string) ($competition['season_year'] ?? ''));
+            $city = trim((string) ($competition['host_city'] ?? ''));
+            $status = trim((string) ($competition['temporal_status'] ?? ''));
+            $details = array_values(array_filter([$year, $city, $status], static fn (string $value): bool => $value !== ''));
+            $label = $title . ($details ? ' — ' . implode(' · ', $details) : '');
+
+            $options[$label] = (string) $seasonId;
+        }
+
+        return $options;
+    }
+
+    public static function matchOptions(): array
+    {
+        $options = ['Choose match…' => ''];
+
+        foreach (self::matchCatalog() as $match) {
+            $matchId = (int) ($match['id'] ?? 0);
+            if ($matchId <= 0) {
+                continue;
+            }
+
+            $home = trim((string) ($match['home_team_short_name'] ?? $match['home_team_name'] ?? ''));
+            $away = trim((string) ($match['away_team_short_name'] ?? $match['away_team_name'] ?? ''));
+            $date = trim((string) ($match['match_date'] ?? ''));
+            $time = trim((string) ($match['kickoff_time'] ?? ''));
+            $competition = trim((string) ($match['tournament_name'] ?? ''));
+            $year = trim((string) ($match['season_year'] ?? ''));
+
+            $fixture = trim($home . ' vs ' . $away);
+            if ($fixture === 'vs') {
+                $fixture = 'Match #' . $matchId;
+            }
+
+            $context = array_values(array_filter([$competition, $year, trim($date . ' ' . $time)], static fn (string $value): bool => $value !== ''));
+            $label = $fixture . ($context ? ' — ' . implode(' · ', $context) : '');
+            $options[$label] = (string) $matchId;
+        }
+
+        return $options;
+    }
+
+    public static function competitionBySeasonId(int $seasonId): ?array
+    {
+        if ($seasonId <= 0) {
+            return null;
+        }
+
+        foreach (self::competitionCatalog() as $competition) {
+            if ((int) ($competition['season_id'] ?? 0) === $seasonId) {
+                return $competition;
+            }
+        }
+
+        return null;
     }
 
     public static function currentCompetitions($obj, array $args): array
@@ -124,6 +198,69 @@ final class XdecaroCompetitionsProvider
             self::nullableInt($args['country_id'] ?? null),
             (int) ($args['limit'] ?? 250),
         ]);
+    }
+
+    private static function competitionCatalog(): array
+    {
+        if (self::$competitionCatalog !== null) {
+            return self::$competitionCatalog;
+        }
+
+        $indexed = [];
+        foreach ([
+            self::currentCompetitions(null, ['limit' => 100]),
+            self::upcomingCompetitions(null, ['limit' => 100]),
+            self::previousCompetitions(null, ['limit' => 100]),
+        ] as $group) {
+            foreach ($group as $competition) {
+                if (!is_array($competition)) {
+                    continue;
+                }
+
+                $seasonId = (int) ($competition['season_id'] ?? 0);
+                if ($seasonId > 0) {
+                    $indexed[$seasonId] = $competition;
+                }
+            }
+        }
+
+        uasort($indexed, static function (array $left, array $right): int {
+            $leftYear = (int) ($left['season_year'] ?? 0);
+            $rightYear = (int) ($right['season_year'] ?? 0);
+            if ($leftYear !== $rightYear) {
+                return $rightYear <=> $leftYear;
+            }
+
+            return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
+        });
+
+        return self::$competitionCatalog = array_values($indexed);
+    }
+
+    private static function matchCatalog(): array
+    {
+        if (self::$matchCatalog !== null) {
+            return self::$matchCatalog;
+        }
+
+        $indexed = [];
+        foreach ([
+            self::upcomingMatches(null, ['limit' => 100]),
+            self::latestResults(null, ['limit' => 100]),
+        ] as $group) {
+            foreach ($group as $match) {
+                if (!is_array($match)) {
+                    continue;
+                }
+
+                $matchId = (int) ($match['id'] ?? 0);
+                if ($matchId > 0) {
+                    $indexed[$matchId] = $match;
+                }
+            }
+        }
+
+        return self::$matchCatalog = array_values($indexed);
     }
 
     private static function service(): mixed
