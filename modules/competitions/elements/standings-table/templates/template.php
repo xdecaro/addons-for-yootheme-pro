@@ -3,7 +3,9 @@
 defined('_JEXEC') || die;
 
 $escape = static fn (mixed $value): string => htmlspecialchars(trim((string) ($value ?? '')), ENT_QUOTES, 'UTF-8');
-$seasonId = (int) ($props['season_id'] ?? 0);
+$selectedSeasonId = (int) ($props['selected_season_id'] ?? 0);
+$mappedSeasonId = (int) ($props['season_id'] ?? 0);
+$seasonId = $selectedSeasonId > 0 ? $selectedSeasonId : $mappedSeasonId;
 $rows = $seasonId > 0
     ? XdecaroCompetitionsProvider::standings(null, ['season_id' => $seasonId])
     : [];
