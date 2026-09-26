@@ -3,38 +3,52 @@
 defined('_JEXEC') || die;
 
 $escape = static fn (mixed $value): string => htmlspecialchars(trim((string) ($value ?? '')), ENT_QUOTES, 'UTF-8');
-$title = trim((string) ($props['title'] ?? ''));
-$meta = trim((string) ($props['meta'] ?? ''));
+$selectedSeasonId = (int) ($props['selected_season_id'] ?? 0);
+$selected = $selectedSeasonId > 0
+    ? (XdecaroCompetitionsProvider::competitionBySeasonId($selectedSeasonId) ?? [])
+    : [];
+
+$value = static function (string $key, mixed $default = '') use ($props, $selected): mixed {
+    $manual = $props[$key] ?? null;
+    if ($manual !== null && $manual !== '') {
+        return $manual;
+    }
+
+    return $selected[$key] ?? $default;
+};
+
+$title = trim((string) $value('title'));
+$meta = trim((string) ($props['meta'] ?? 'Competition'));
 $link = trim((string) ($props['link_override'] ?? ''));
 $buttonText = trim((string) ($props['button_text'] ?? 'View competition')) ?: 'View competition';
 $style = (string) ($props['card_style'] ?? 'default');
 $style = in_array($style, ['default', 'primary', 'secondary'], true) ? $style : 'default';
 
 $details = [];
-$discipline = trim((string) ($props['discipline'] ?? ''));
-$gender = trim((string) ($props['gender'] ?? ''));
+$discipline = trim((string) $value('discipline'));
+$gender = trim((string) $value('gender'));
 if ($discipline !== '') {
     $details[] = $discipline;
 }
 if ($gender !== '') {
     $details[] = $gender;
 }
-$seasonYear = trim((string) ($props['season_year'] ?? ''));
+$seasonYear = trim((string) $value('season_year'));
 if ($seasonYear !== '') {
     $details[] = $seasonYear;
 }
 
 $place = array_filter([
-    trim((string) ($props['host_city'] ?? '')),
-    trim((string) ($props['host_country_code'] ?? '')),
-], static fn (string $value): bool => $value !== '');
+    trim((string) $value('host_city')),
+    trim((string) $value('host_country_code')),
+], static fn (string $item): bool => $item !== '');
 
 $dates = array_filter([
-    trim((string) ($props['start_date'] ?? '')),
-    trim((string) ($props['end_date'] ?? '')),
-], static fn (string $value): bool => $value !== '');
+    trim((string) $value('start_date')),
+    trim((string) $value('end_date')),
+], static fn (string $item): bool => $item !== '');
 
-$teamCount = trim((string) ($props['team_count'] ?? ''));
+$teamCount = trim((string) $value('team_count'));
 $classes = ['el-item', 'uk-card', 'uk-card-' . $style, 'uk-card-body'];
 $el = $this->el('div', ['class' => $classes]);
 ?>
