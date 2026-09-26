@@ -100,8 +100,8 @@ foreach ($elements as $directory => $technicalName) {
     expectContains($element, "'name' => '{$technicalName}'", "Wrong technical name for {$directory}");
     expectContains($element, "'group' => 'xdecaro'", "{$directory} must stay in the XDECARO group");
     expectContains($element, "'source' => true", "{$directory} must expose dynamically mappable fields");
-    expectContains($element, "'icon' => '${url:images/icon.svg}'", "{$directory} must declare its large Builder icon");
-    expectContains($element, "'iconSmall' => '${url:images/iconSmall.svg}'", "{$directory} must declare its small Builder icon");
+    expectContains($element, "'icon' => '\${url:images/icon.svg}'", "{$directory} must declare its large Builder icon");
+    expectContains($element, "'iconSmall' => '\${url:images/iconSmall.svg}'", "{$directory} must declare its small Builder icon");
     readRequired($base . '/images/icon.svg');
     readRequired($base . '/images/iconSmall.svg');
     expectNotContains($template, '#091247', "{$directory} must inherit YOOtheme style instead of hard-coding DCL navy");
