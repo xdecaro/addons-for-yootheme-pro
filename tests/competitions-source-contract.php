@@ -3,8 +3,8 @@
 $root = dirname(__DIR__);
 $bootstrap = $root . '/modules/competitions/bootstrap.php';
 $listener = $root . '/modules/competitions/src/SourceListener.php';
-$query = $root . '/modules/competitions/src/Type/CompetitionsQueryType.php';
-$provider = $root . '/modules/competitions/src/CompetitionsProvider.php';
+$query = $root . '/modules/competitions/src/Type/QueryType.php';
+$provider = $root . '/modules/competitions/src/CompetitionProvider.php';
 
 foreach ([$bootstrap, $listener, $query, $provider] as $file) {
     if (!is_file($file)) {
@@ -23,22 +23,42 @@ if (!str_contains($bootstrapSource, "'source.init'")) {
     exit(1);
 }
 
-foreach (['XdecaroCompetition', 'XdecaroMatch', 'XdecaroTeam', 'XdecaroCountry', 'XdecaroFederation'] as $type) {
+foreach ([
+    'XdecaroCompetition',
+    'XdecaroCompetitionMatch',
+    'XdecaroCompetitionTeam',
+    'XdecaroCompetitionCountry',
+    'XdecaroCompetitionFederation',
+] as $type) {
     if (!str_contains($listenerSource, $type)) {
         fwrite(STDERR, "Missing source type registration: {$type}\n");
         exit(1);
     }
 }
 
-foreach (['current_competitions', 'upcoming_competitions', 'previous_competitions', 'upcoming_matches', 'latest_results', 'participating_teams', 'countries', 'federations'] as $field) {
+foreach ([
+    'xdecaro_current_competitions',
+    'xdecaro_upcoming_competitions',
+    'xdecaro_previous_competitions',
+    'xdecaro_upcoming_matches',
+    'xdecaro_latest_results',
+    'xdecaro_participating_teams',
+    'xdecaro_countries',
+    'xdecaro_federations',
+] as $field) {
     if (!str_contains($querySource, "'{$field}'")) {
         fwrite(STDERR, "Missing query source: {$field}\n");
         exit(1);
     }
 }
 
-if (!str_contains($providerSource, "bootComponent('com_competitions')")) {
+if (!str_contains($providerSource, "bootComponent('com_xdecarocompetitions')")) {
     fwrite(STDERR, "Provider must consume Competitions public component API\n");
+    exit(1);
+}
+
+if (!str_contains($providerSource, 'getPublicBuilderDataService')) {
+    fwrite(STDERR, "Provider must use Competitions public builder service\n");
     exit(1);
 }
 
