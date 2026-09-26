@@ -140,7 +140,7 @@ final class XdecaroCompetitionsProvider
                 return null;
             }
 
-            $component = $app->bootComponent('com_competitions');
+            $component = $app->bootComponent('com_xdecarocompetitions');
             if (!is_object($component) || !method_exists($component, 'getPublicBuilderDataService')) {
                 return null;
             }
