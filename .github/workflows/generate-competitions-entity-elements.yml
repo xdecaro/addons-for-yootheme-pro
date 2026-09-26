@@ -1,0 +1,43 @@
+name: Generate Competitions Entity Elements
+
+on:
+  push:
+    branches: [feature/competitions-dynamic-sources]
+    paths:
+      - tools/generate_competitions_entity_elements.py
+      - .github/workflows/generate-competitions-entity-elements.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/competitions-dynamic-sources
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Generate five elements
+        run: python3 tools/generate_competitions_entity_elements.py
+      - name: Verify generated PHP syntax
+        run: |
+          find modules/competitions/elements/federation-card modules/competitions/elements/team-card modules/competitions/elements/teams-grid modules/competitions/elements/player-card modules/competitions/elements/team-roster -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Verify full builder contract
+        run: php tests/competitions-elements-builder-contract.php
+      - name: Verify icons exist
+        run: |
+          for element in federation-card team-card teams-grid player-card team-roster; do
+            test -s "modules/competitions/elements/${element}/images/icon.svg"
+            test -s "modules/competitions/elements/${element}/images/iconSmall.svg"
+          done
+      - name: Commit verified generated elements
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add modules/competitions/elements/federation-card modules/competitions/elements/team-card modules/competitions/elements/teams-grid modules/competitions/elements/player-card modules/competitions/elements/team-roster
+          git diff --cached --quiet || git commit -m "feat: add federation team player roster elements"
+          git push origin HEAD:feature/competitions-dynamic-sources
