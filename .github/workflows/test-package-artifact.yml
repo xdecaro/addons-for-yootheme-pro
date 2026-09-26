@@ -25,6 +25,7 @@ jobs:
         run: |
           php tests/competitions-source-contract.php
           php tests/competitions-dynamic-sources-contract.php
+          php tests/competitions-elements-builder-contract.php
       - name: Build 1.6.0-beta1 test package
         run: |
           rm -rf build/test-stage build/plg_system_xdecaro_1.6.0-beta1.zip
@@ -44,9 +45,11 @@ jobs:
       - name: Verify ZIP integrity and contents
         run: |
           unzip -t build/plg_system_xdecaro_1.6.0-beta1.zip
-          unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep 'modules/competitions/elements/competition-card/images/icon.svg'
-          unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep 'modules/competitions/elements/match-score/images/icon.svg'
-          unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep 'modules/competitions/elements/standings-table/images/icon.svg'
+          unzip -p build/plg_system_xdecaro_1.6.0-beta1.zip xdecaro.xml | grep '<version>1.6.0-beta1</version>'
+          for element in competition-card match-score standings-table; do
+            unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep "modules/competitions/elements/${element}/images/icon.svg"
+            unzip -l build/plg_system_xdecaro_1.6.0-beta1.zip | grep "modules/competitions/elements/${element}/images/iconSmall.svg"
+          done
       - name: Upload test package
         uses: actions/upload-artifact@v4
         with:
