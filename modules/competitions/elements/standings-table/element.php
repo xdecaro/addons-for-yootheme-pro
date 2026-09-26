@@ -6,6 +6,8 @@ return [
     'name' => 'xdecaro_standings_table',
     'title' => 'Standings Table',
     'group' => 'xdecaro',
+    'icon' => '${url:images/icon.svg}',
+    'iconSmall' => '${url:images/iconSmall.svg}',
     'element' => true,
     'width' => 500,
     'templates' => [
@@ -13,16 +15,23 @@ return [
         'content' => __DIR__ . '/templates/content.php',
     ],
     'defaults' => [
+        'selected_season_id' => '',
         'season_id' => '',
         'empty_text' => 'Standings are not available yet.',
         'show_goal_columns' => true,
     ],
     'fields' => [
+        'selected_season_id' => [
+            'label' => 'Competition / Season',
+            'type' => 'select',
+            'options' => XdecaroCompetitionsProvider::competitionOptions(),
+            'description' => 'Choose an available competition/season. Leave empty when the season is supplied through Dynamic Content.',
+        ],
         'season_id' => [
-            'label' => 'Season ID',
+            'label' => 'Season ID Override',
             'type' => 'number',
             'source' => true,
-            'description' => 'Map this field from a Competition source or enter a season ID.',
+            'description' => 'Advanced/manual override. Normally choose Competition / Season above or map this field dynamically.',
             'attrs' => ['min' => 1, 'step' => 1],
         ],
         'empty_text' => ['label' => 'Empty State Text', 'type' => 'text'],
@@ -40,7 +49,11 @@ return [
             'fields' => [
                 [
                     'title' => 'Content',
-                    'fields' => ['season_id', 'empty_text'],
+                    'fields' => ['selected_season_id', 'empty_text'],
+                ],
+                [
+                    'title' => 'Advanced Data',
+                    'fields' => ['season_id'],
                 ],
                 [
                     'title' => 'Style',
