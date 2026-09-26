@@ -49,6 +49,10 @@ expectContains($provider, 'getPublicBuilderDataService', 'Provider must consume 
 expectNotContains($provider, 'DatabaseInterface', 'YOOtheme addon must not query the Competitions database directly');
 expectNotContains($provider, '#__xdecarocompetitions_', 'YOOtheme addon must not read Competitions private tables');
 
+foreach (['competitionOptions', 'matchOptions', 'competitionBySeasonId'] as $method) {
+    expectContains($provider, 'function ' . $method . '(', "Provider must expose {$method} for Builder selectors");
+}
+
 $queries = [
     'xdecaro_current_competitions',
     'xdecaro_upcoming_competitions',
@@ -90,20 +94,39 @@ $elements = [
     'standings-table' => 'xdecaro_standings_table',
 ];
 foreach ($elements as $directory => $technicalName) {
-    $element = readRequired($module . '/elements/' . $directory . '/element.php');
-    $template = readRequired($module . '/elements/' . $directory . '/templates/template.php');
+    $base = $module . '/elements/' . $directory;
+    $element = readRequired($base . '/element.php');
+    $template = readRequired($base . '/templates/template.php');
     expectContains($element, "'name' => '{$technicalName}'", "Wrong technical name for {$directory}");
     expectContains($element, "'group' => 'xdecaro'", "{$directory} must stay in the XDECARO group");
     expectContains($element, "'source' => true", "{$directory} must expose dynamically mappable fields");
+    expectContains($element, "'icon' => '${url:images/icon.svg}'", "{$directory} must declare its large Builder icon");
+    expectContains($element, "'iconSmall' => '${url:images/iconSmall.svg}'", "{$directory} must declare its small Builder icon");
+    readRequired($base . '/images/icon.svg');
+    readRequired($base . '/images/iconSmall.svg');
     expectNotContains($template, '#091247', "{$directory} must inherit YOOtheme style instead of hard-coding DCL navy");
     expectNotContains($template, '#2E58A6', "{$directory} must inherit YOOtheme style instead of hard-coding DCL blue");
 }
 
+$competitionElement = readRequired($module . '/elements/competition-card/element.php');
+$competitionTemplate = readRequired($module . '/elements/competition-card/templates/template.php');
+expectContains($competitionElement, "'selected_season_id'", 'Competition Card must expose a Competition selector');
+expectContains($competitionElement, 'XdecaroCompetitionsProvider::competitionOptions()', 'Competition Card selector must use public Competitions data');
+expectContains($competitionTemplate, 'competitionBySeasonId', 'Competition Card must resolve the selected competition');
+
+$matchElement = readRequired($module . '/elements/match-score/element.php');
 $matchTemplate = readRequired($module . '/elements/match-score/templates/template.php');
+expectContains($matchElement, "'selected_match_id'", 'Match Score must expose a Match selector');
+expectContains($matchElement, 'XdecaroCompetitionsProvider::matchOptions()', 'Match Score selector must use public Competitions data');
+expectContains($matchTemplate, "'match_id'", 'Match Score must resolve the selected match through the provider');
 expectNotContains($matchTemplate, '0 - 0', 'Scheduled matches must not invent a 0-0 score');
 expectNotContains($matchTemplate, '0–0', 'Scheduled matches must not invent a 0–0 score');
 
+$standingsElement = readRequired($module . '/elements/standings-table/element.php');
 $standingsTemplate = readRequired($module . '/elements/standings-table/templates/template.php');
+expectContains($standingsElement, "'selected_season_id'", 'Standings Table must expose a Competition/Season selector');
+expectContains($standingsElement, 'XdecaroCompetitionsProvider::competitionOptions()', 'Standings selector must use public Competitions data');
+expectContains($standingsTemplate, "selected_season_id", 'Standings must prefer the selected Competition/Season');
 expectContains($standingsTemplate, '<table', 'Standings must use semantic table markup');
 expectContains($standingsTemplate, '<thead', 'Standings must include a semantic table head');
 expectContains($standingsTemplate, '<tbody', 'Standings must include a semantic table body');
