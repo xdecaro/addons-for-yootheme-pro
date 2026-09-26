@@ -40,9 +40,11 @@ $provider = readRequired($module . '/src/CompetitionProvider.php');
 $queryType = readRequired($module . '/src/Type/QueryType.php');
 
 expectContains($bootstrap, "'source.init'", 'Competitions module must register source.init');
+expectContains($bootstrap, "XdecaroCompetitionsSourceListener::class => ['initSource']", 'source.init must use the documented serializable YOOtheme listener form');
 expectContains($listener, 'objectType(', 'Source listener must register object types');
 expectContains($listener, 'queryType(', 'Source listener must extend the Query type');
-expectContains($provider, "bootComponent('com_competitions')", 'Provider must use the Competitions public component surface');
+expectContains($provider, "bootComponent('com_xdecarocompetitions')", 'Provider must use the real Competitions component identity');
+expectNotContains($provider, "bootComponent('com_competitions')", 'Legacy/incorrect component identity must not be used');
 expectContains($provider, 'getPublicBuilderDataService', 'Provider must consume PublicBuilderDataService');
 expectNotContains($provider, 'DatabaseInterface', 'YOOtheme addon must not query the Competitions database directly');
 expectNotContains($provider, '#__xdecarocompetitions_', 'YOOtheme addon must not read Competitions private tables');
