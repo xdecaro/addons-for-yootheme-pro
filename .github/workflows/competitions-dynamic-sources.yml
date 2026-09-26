@@ -3,7 +3,9 @@ name: Competitions Dynamic Sources
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feature/competitions-dynamic-sources
 
 permissions:
   contents: read
