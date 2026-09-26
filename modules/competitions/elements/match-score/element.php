@@ -13,7 +13,7 @@ return [
         'content' => __DIR__ . '/templates/content.php',
     ],
     'defaults' => [
-        'status' => '',
+        'match_status' => '',
         'show_logos' => true,
         'card_style' => 'default',
     ],
@@ -28,7 +28,12 @@ return [
         'away_score' => ['label' => 'Away Score', 'type' => 'text', 'source' => true],
         'home_penalties' => ['label' => 'Home Penalties', 'type' => 'text', 'source' => true],
         'away_penalties' => ['label' => 'Away Penalties', 'type' => 'text', 'source' => true],
-        'status' => ['label' => 'Status', 'type' => 'text', 'source' => true],
+        'match_status' => [
+            'label' => 'Match Status',
+            'type' => 'text',
+            'source' => true,
+            'description' => 'Map this field to the Match source field “Status”.',
+        ],
         'match_date' => ['label' => 'Date', 'type' => 'text', 'source' => true],
         'kickoff_time' => ['label' => 'Kick-off', 'type' => 'text', 'source' => true],
         'stage' => ['label' => 'Stage', 'type' => 'text', 'source' => true],
@@ -42,7 +47,7 @@ return [
         ],
         'source' => '${builder.source}',
         'name' => '${builder.name}',
-        'status_builder' => '${builder.status}',
+        'status' => '${builder.status}',
         'id' => '${builder.id}',
         'class' => '${builder.cls}',
         'attributes' => '${builder.attrs}',
@@ -53,7 +58,7 @@ return [
             'fields' => [
                 [
                     'title' => 'Content',
-                    'fields' => ['home_team_name', 'home_team_short_name', 'home_team_logo', 'away_team_name', 'away_team_short_name', 'away_team_logo', 'home_score', 'away_score', 'home_penalties', 'away_penalties', 'status', 'match_date', 'kickoff_time', 'stage', 'round_name', 'venue_name'],
+                    'fields' => ['home_team_name', 'home_team_short_name', 'home_team_logo', 'away_team_name', 'away_team_short_name', 'away_team_logo', 'home_score', 'away_score', 'home_penalties', 'away_penalties', 'match_status', 'match_date', 'kickoff_time', 'stage', 'round_name', 'venue_name'],
                 ],
                 [
                     'title' => 'Style',
